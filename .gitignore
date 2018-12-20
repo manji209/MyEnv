@@ -1,2 +1,9 @@
 
 Invoice_History1.csv
+data1.csv
+venv/
+.idea/
+*.csv
+*.xlsx
+*.txt
+*.pdf
