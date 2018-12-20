@@ -242,4 +242,3 @@ print(frozen.df['@IMAGES'])
 print(frozen.df['CATEGORY'])
 combined_set = append_df(grocery.df, frozen.df, df_append)
 output_csv(combined_set)
-
