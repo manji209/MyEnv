@@ -81,6 +81,7 @@ def get_name(num):
     return switcher.get(num, "NA#")
 
 
+'''
 # Return number of dates found in a string
 def find_dates(date_string):
     matches = datefinder.find_dates(date_string, strict=True)
@@ -88,6 +89,16 @@ def find_dates(date_string):
     for match in matches:
         num_match += 1
     return num_match
+'''
+
+# Return number of dates found in a string
+def find_dates(date_string):
+    temp_string = date_string.replace(":", "")
+    matches = datefinder.find_dates(temp_string, strict=True)
+    for match in matches:
+        return match
+
+    return " "
 
 
 def find_quantity(string):
@@ -159,6 +170,8 @@ for item in pages:
 
 # Go through each page to extract all the necessary information
 for p in pages:
+    # Credit Memo flag to False until credit memo page is found
+    cmemo = False
 
     # If page has no info then continue
     if len(p.list_items) == 2:
@@ -178,19 +191,23 @@ for p in pages:
     if check_num(p.list_items[0][-1]):
         info.sales_rep = get_name(int(p.list_items[0][-1]))
     else:
+        # Check if the page is a Credit Memo
         info.sales_rep = get_name(int(p.list_items[0][-2]))
         info.credit_memo = 'CREDIT MEMO'
+        cmemo = True
 
     # Go through Invoice line to extract the appropriate data
     for string in p.list_items[0]:
+
+
         if customer_blank:
             info.customer_num = string
             break
 
         if check_num(string):
             info.invoice_num = string
-        elif find_dates(string) > 0:
-            info.date = string
+        elif find_dates(string) != " ":
+            info.date = find_dates(string)
         elif string.find('Customer:') >= 0:
             info.customer_num = string.rsplit("Customer:")[-1].strip()
             if len(info.customer_num):
@@ -230,6 +247,10 @@ for p in pages:
                             temp_line = '-' + item.quantity.replace("-", "")
                             item.quantity = temp_line
 
+                        # Check if item is a credit memo.  If so, make the quantity a negative number
+                        if cmemo and item.quantity.find('-') == -1:
+                            item.quantity = '-' + item.quantity
+
                         line.pop(0)
                         break
 
@@ -237,15 +258,7 @@ for p in pages:
                         item.description = item.description + line[0]
                         line.pop(0)
 
-                '''
-                # Go through rest of list to find Unit Price.
-                for i in range(0, len(line)):
-                    if check_num(line[i]):
-                        item.quantity = line[i]
-                    elif check_double(line[i]):
-                        item.unit_price = line[i]
-                        break
-                '''
+
                 # Go through rest of list to find Unit Price.
                 for i in range(0, len(line)):
                     if check_num(line[i]):
@@ -368,3 +381,15 @@ writer.save()
 #print(invoice_history)
 print('Pages Found: ', len(pages))
 print('Line Items: ', line_item)
+
+tempstring = 'created 01/15/2005 by ACME Inc. and associates Invoice : 11/15/18 created 01/15/2005 by ACME Inc. and associates'
+print('Dates Found: ', find_dates(tempstring))
+
+tempstring = tempstring.replace(":", "")
+
+tempstring2 = 'created: date: ok 01/15/2005 by ACME Inc. and associates date 11/15/18 created what: 01/15/2005 by ACME Inc. and associates'
+print('Dates Found: ', find_dates(tempstring2))
+
+tempstring = tempstring.replace(":", "")
+
+print(tempstring)
