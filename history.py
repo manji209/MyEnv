@@ -282,6 +282,7 @@ for item in invoice_history:
 df = pd.DataFrame(invoice_history, columns=labels)
 
 
+
 df['ORDER #'] = pd.to_numeric(df['ORDER #'], errors='coerce')
 df['INVOICE #'] = pd.to_numeric(df['INVOICE #'], errors='coerce')
 df['QUANTITY'] = pd.to_numeric(df['QUANTITY'], errors='coerce')
@@ -296,6 +297,8 @@ df['DATE'] = pd.to_datetime(df['DATE'], errors='coerce').dt.date
 
 
 test_pivot_df = pd.pivot_table(df, index=['SKU #', 'DESCRIPTION'], aggfunc='first')
+
+
 test_pivot_df2 = pd.pivot_table(df, index=['SKU #', 'DESCRIPTION', 'UNIT PRICE', 'CUSTOMER ID',
                                            'SALES REP'], aggfunc='first')
 test_pivot_df3 = pd.pivot_table(df, index=['SKU #', 'DESCRIPTION', 'SALES REP'], values='UNIT PRICE', aggfunc='first')
@@ -304,15 +307,42 @@ test_pivot_df5 = pd.pivot_table(df, index=['SKU #', 'DESCRIPTION', 'SALES REP', 
                                            'QUANTITY'], values='UNIT PRICE', aggfunc=np.sum)
 test_pivot_df6 = pd.pivot_table(df, index=['SKU #', 'UNIT PRICE', 'DESCRIPTION', 'SALES REP', 'CUSTOMER ID',
                                            'QUANTITY'], aggfunc='first')
+                                           
+
 
 #test_pivot_df6.ffill(inplace=True)
 #test_pivot_df6.reset_index()
-print(test_pivot_df6)
+
+pop_list = []
+found = False
+for i in range(0, len(test_pivot_df.index.values)-1):
+    a = test_pivot_df.index[i][0]
+    b = test_pivot_df.index[i+1][0]
+    if a == b:
+        found = True
+        continue
+    elif found:
+        found = False
+        continue
+    else:
+        pop_list.insert(0, i)
 
 
+for sku in pop_list:
+    test_pivot_df.drop(test_pivot_df.index[sku], inplace=True)
 
+test_pivot_df.drop(columns=['CUSTOMER ID', 'DATE', 'INVOICE #', 'ORDER #', 'QUANTITY', 'SALES REP'], inplace=True)
+
+print('Dup List: ', pop_list)
+print('Hello: ', test_pivot_df.index[1][0])
+
+
+#invoice_history.append(['ORDER #', 'INVOICE #', 'DATE', 'CUSTOMER ID', 'SALES REP', 'SKU #', 'DESCRIPTION',
+                        #'QUANTITY', 'UNIT PRICE'])
+
+#
 # Create a Pandas Excel writer using XlsxWriter as the engine.
-writer = pd.ExcelWriter('pivot_sample.xlsx', engine='xlsxwriter')
+writer = pd.ExcelWriter('pivot_sample7.xlsx', engine='xlsxwriter')
 
 # Convert the dataframe to an XlsxWriter Excel object.
 df.to_excel(writer, sheet_name='Invoice Info', index=False)
@@ -325,22 +355,12 @@ test_pivot_df5.to_excel(writer, sheet_name='Pivot5')
 test_pivot_df6.to_excel(writer, sheet_name='Pivot6')
 
 
+
+
 # Close the Pandas Excel writer and output the Excel file.
 writer.save()
-
-#test_pivot_df2 = pd.pivot_table(df, index=['SKU #', 'DESCRIPTION', 'SALES REP'], values='UNIT PRICE', aggfunc='first')
-#print(test_pivot_df2)
-
-#test_pivot_df.to_excel('out_pivot11.xlsx')
-#test_pivot_df2.to_excel('out_pivot4.xlsx')
-
-#df.to_excel('out_invoice_history.xlsx', index=False)
-#pd.DataFrame(invoice_history).to_excel('out_invoice_history.xlsx', header=False, index=False)
 
 #print(invoice_history)
 print('Pages Found: ', len(pages))
 print('Line Items: ', line_item)
 
-
-#df = pd.DataFrame(columns=['ORDER #', 'INVOICE #', 'DATE', 'CUSTOMER ID', 'SALES REP', 'SKU #', 'DESCRIPTION',
-                           #'QUANTITY', 'UNIT PRICE'])

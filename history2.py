@@ -7,7 +7,7 @@ import datetime
 import xlsxwriter
 from openpyxl import Workbook
 
-datafile = open('Invoice_History6.csv', 'r')
+datafile = open('Invoice_History.csv', 'r')
 line_reader = list(csv.reader(datafile))
 
 # df = pd.DataFrame(columns=['ORDER #', 'INVOICE #', 'DATE', 'CUSTOMER ID', 'SALES REP', 'SKU #', 'DESCRIPTION',
@@ -301,7 +301,7 @@ test_pivot_df6 = pd.pivot_table(df, index=['SKU #', 'UNIT PRICE', 'DESCRIPTION',
 print(test_pivot_df6)
 
 # Create a Pandas Excel writer using XlsxWriter as the engine.
-writer = pd.ExcelWriter('pivot_sample.xlsx', engine='xlsxwriter')
+writer = pd.ExcelWriter('pivot_sample1.xlsx', engine='xlsxwriter')
 
 # Convert the dataframe to an XlsxWriter Excel object.
 df.to_excel(writer, sheet_name='Invoice Info', index=False)
