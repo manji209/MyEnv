@@ -14,7 +14,7 @@ line_reader = list(csv.reader(datafile))
 #df = pd.DataFrame(columns=['ORDER #', 'INVOICE #', 'DATE', 'CUSTOMER ID', 'SALES REP', 'SKU #', 'DESCRIPTION',
                            #'QUANTITY', 'UNIT PRICE'])
 labels = ['ORDER #', 'INVOICE #', 'DATE', 'CUSTOMER ID', 'SALES REP', 'SKU #', 'DESCRIPTION',
-           'QUANTITY', 'UNIT PRICE']
+           'QUANTITY', 'UNIT PRICE', 'CREDIT MEMO']
 
 pages = []
 invoice_history = []
@@ -45,6 +45,7 @@ class Order:
         self.customer_num = ''
         self.date = ''
         self.sales_rep = ''
+        self.credit_memo = ''
 
 
 def check_num(s):
@@ -178,6 +179,7 @@ for p in pages:
         info.sales_rep = get_name(int(p.list_items[0][-1]))
     else:
         info.sales_rep = get_name(int(p.list_items[0][-2]))
+        info.credit_memo = 'CREDIT MEMO'
 
     # Go through Invoice line to extract the appropriate data
     for string in p.list_items[0]:
@@ -263,7 +265,7 @@ for p in pages:
         if item.sku != '':
             line_item += 1
             invoice_history.append([info.order_num, info.invoice_num, info.date, info.customer_num, info.sales_rep,
-                                    item.sku, item.description, item.quantity, item.unit_price])
+                                    item.sku, item.description, item.quantity, item.unit_price, info.credit_memo])
 
             #print(info.order_num, info.invoice_num, info.date, info.customer_num, info.sales_rep, item.sku,
                   #item.description, item.quantity, item.unit_price)
@@ -297,17 +299,19 @@ df['DATE'] = pd.to_datetime(df['DATE'], errors='coerce').dt.date
 
 
 test_pivot_df = pd.pivot_table(df, index=['SKU #', 'DESCRIPTION'], aggfunc='first')
+test_pivot_df.drop(columns=['ORDER #', 'QUANTITY'], inplace=True)
 
+test_pivot_df2 = pd.pivot_table(df, index=['SKU #', 'UNIT PRICE', 'DESCRIPTION'], aggfunc='first')
+test_pivot_df2.drop(columns=['ORDER #'], inplace=True)
 
-test_pivot_df2 = pd.pivot_table(df, index=['SKU #', 'DESCRIPTION', 'UNIT PRICE', 'CUSTOMER ID',
-                                           'SALES REP'], aggfunc='first')
+'''
 test_pivot_df3 = pd.pivot_table(df, index=['SKU #', 'DESCRIPTION', 'SALES REP'], values='UNIT PRICE', aggfunc='first')
 test_pivot_df4 = pd.pivot_table(df, index=['SKU #', 'DESCRIPTION', 'SALES REP', 'UNIT PRICE'], aggfunc='first')
 test_pivot_df5 = pd.pivot_table(df, index=['SKU #', 'DESCRIPTION', 'SALES REP', 'CUSTOMER ID',
                                            'QUANTITY'], values='UNIT PRICE', aggfunc=np.sum)
 test_pivot_df6 = pd.pivot_table(df, index=['SKU #', 'UNIT PRICE', 'DESCRIPTION', 'SALES REP', 'CUSTOMER ID',
                                            'QUANTITY'], aggfunc='first')
-
+'''
 
 
 #test_pivot_df6.ffill(inplace=True)
@@ -331,7 +335,7 @@ for i in range(0, len(test_pivot_df.index.values)-1):
 for sku in pop_list:
     test_pivot_df.drop(test_pivot_df.index[sku], inplace=True)
 
-test_pivot_df.drop(columns=['CUSTOMER ID', 'DATE', 'INVOICE #', 'ORDER #', 'QUANTITY', 'SALES REP'], inplace=True)
+
 
 print('Dup List: ', pop_list)
 print('Hello: ', test_pivot_df.index[1][0])
@@ -347,12 +351,13 @@ writer = pd.ExcelWriter('pivot_sample7.xlsx', engine='xlsxwriter')
 # Convert the dataframe to an XlsxWriter Excel object.
 df.to_excel(writer, sheet_name='Invoice Info', index=False)
 
-test_pivot_df.to_excel(writer, sheet_name='Pivot1')
-test_pivot_df2.to_excel(writer, sheet_name='Pivot2')
-test_pivot_df3.to_excel(writer, sheet_name='Pivot3')
-test_pivot_df4.to_excel(writer, sheet_name='Pivot4')
-test_pivot_df5.to_excel(writer, sheet_name='Pivot5')
-test_pivot_df6.to_excel(writer, sheet_name='Pivot6')
+test_pivot_df.to_excel(writer, sheet_name='Item Number Audit')
+test_pivot_df2.to_excel(writer, sheet_name='Price Audit')
+
+#test_pivot_df3.to_excel(writer, sheet_name='Pivot3')
+#test_pivot_df4.to_excel(writer, sheet_name='Pivot4')
+#test_pivot_df5.to_excel(writer, sheet_name='Pivot5')
+#test_pivot_df6.to_excel(writer, sheet_name='Pivot6')
 
 
 
