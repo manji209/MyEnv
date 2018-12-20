@@ -8,7 +8,7 @@ import xlsxwriter
 from openpyxl import Workbook
 
 #12/15/18
-datafile = open('Invoice_History6.csv', 'r')
+datafile = open('Aug_Invoice_History.csv', 'r')
 line_reader = list(csv.reader(datafile))
 
 #df = pd.DataFrame(columns=['ORDER #', 'INVOICE #', 'DATE', 'CUSTOMER ID', 'SALES REP', 'SKU #', 'DESCRIPTION',
@@ -216,7 +216,7 @@ for p in pages:
                 line.pop(0)
 
                 for i in range(0, len(line)):
-                    if line[0] == "":
+                    if line[0] == "" or line[0] == "=":
                         line.pop(0)
                         continue
                     elif find_quantity(line[0]):
@@ -309,10 +309,11 @@ test_pivot_df6 = pd.pivot_table(df, index=['SKU #', 'UNIT PRICE', 'DESCRIPTION',
 #test_pivot_df6.reset_index()
 print(test_pivot_df6)
 
-
+#test_pivot_df.columns = labels
+test_pivot_df = test_pivot_df.duplicated(subset='DESCRIPTION', keep='first')
 
 # Create a Pandas Excel writer using XlsxWriter as the engine.
-writer = pd.ExcelWriter('pivot_sample.xlsx', engine='xlsxwriter')
+writer = pd.ExcelWriter('pivot_sample_Aug1.xlsx', engine='xlsxwriter')
 
 # Convert the dataframe to an XlsxWriter Excel object.
 df.to_excel(writer, sheet_name='Invoice Info', index=False)
