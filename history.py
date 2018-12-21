@@ -133,8 +133,9 @@ def set_currency(writer, sheet_name, column):
     workbook = writer.book
     worksheet = writer.sheets[sheet_name]
 
-    money_fmt = workbook.add_format({'num_format': '$#,###.00', 'bold': True})
+    money_fmt = workbook.add_format({'num_format': '$#,##0.00', 'bold': True})
     worksheet.set_column(column, 12, money_fmt)
+
 
 
 for item in line_reader:
@@ -321,8 +322,8 @@ df['QUANTITY'] = pd.to_numeric(df['QUANTITY'], errors='coerce')
 
 #df['UNIT PRICE'] = pd.to_numeric(df['UNIT PRICE'], errors='coerce')
 #df['UNIT PRICE']= df['UNIT PRICE'].apply(format_currency)
-#df['UNIT PRICE'] = pd.to_numeric(df['UNIT PRICE'], errors='coerce').map(('${:,.2f}'.format))
-df['UNIT PRICE'] = pd.to_numeric(df['UNIT PRICE'], errors='coerce')
+df['UNIT PRICE'] = pd.to_numeric(df['UNIT PRICE'], errors='coerce').map(('${:,.2f}'.format))
+#df['UNIT PRICE'] = pd.to_numeric(df['UNIT PRICE'], errors='coerce')
 #df['UNIT PRICE'] = df['UNIT PRICE'].map(('${:,.2f}'.format))
 #df['DATE'] = pd.to_datetime(df['DATE'], errors='coerce')
 
@@ -338,7 +339,7 @@ test_pivot_df.drop(columns=['ORDER #', 'QUANTITY'], inplace=True)
 
 test_pivot_df2 = pd.pivot_table(df, index=['SKU #', 'UNIT PRICE', 'DESCRIPTION'], aggfunc='first')
 test_pivot_df2.drop(columns=['ORDER #'], inplace=True)
-
+test_pivot_df4 = pd.pivot_table(df, index=['SKU #', 'DESCRIPTION', 'SALES REP', 'UNIT PRICE'], aggfunc='first')
 '''
 test_pivot_df3 = pd.pivot_table(df, index=['SKU #', 'DESCRIPTION', 'SALES REP'], values='UNIT PRICE', aggfunc='first')
 test_pivot_df4 = pd.pivot_table(df, index=['SKU #', 'DESCRIPTION', 'SALES REP', 'UNIT PRICE'], aggfunc='first')
@@ -388,30 +389,27 @@ writer = pd.ExcelWriter('pivot_sample7.xlsx', engine='xlsxwriter')
 # Convert the dataframe to an XlsxWriter Excel object.
 df.to_excel(writer, sheet_name='Invoice Info', index=False)
 
-
-
-
-
-#test_pivot_df2.to_excel(writer, sheet_name='Price Audit')
-'''
-workbook = writer.book
-worksheet = writer.sheets['Invoice Info']
-
-money_fmt = workbook.add_format({'num_format': '$#,###.00', 'bold': True})
-worksheet.set_column('I:I', 12, money_fmt)
-'''
-
 test_pivot_df.to_excel(writer, sheet_name='Item Number Audit')
 test_pivot_df2.to_excel(writer, sheet_name='Price Audit')
+
+
+'''
+test_pivot_df.reset_index(level=0, inplace=True)
+test_pivot_df.to_excel(writer, sheet_name='Item Number Audit')
+test_pivot_df2.reset_index(level=['UNIT PRICE'], inplace=True)
+test_pivot_df2.to_excel(writer, sheet_name='Price Audit')
 #test_pivot_df3.to_excel(writer, sheet_name='Pivot3')
-#test_pivot_df4.to_excel(writer, sheet_name='Pivot4')
+test_pivot_df4.to_excel(writer, sheet_name='Price Test')
 #test_pivot_df5.to_excel(writer, sheet_name='Pivot5')
 #test_pivot_df6.to_excel(writer, sheet_name='Pivot6')
 
-set_currency(writer, 'Price Audit', 'B:B')
+set_currency(writer, 'Price Audit', 'C:C')
 set_currency(writer, 'Invoice Info', 'I:I')
+set_currency(writer, 'Price Test', 'D:D')
 #set_currency(writer, 'Item Number Audit', 'H:H')
 #set_currency(writer, 'Price Audit', 'B:B')
+'''
+
 
 # Close the Pandas Excel writer and output the Excel file.
 writer.save()
