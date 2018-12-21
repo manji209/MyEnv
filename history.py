@@ -123,6 +123,50 @@ def find_unit_price(string):
         return check_double(string)
 
 
+# Go thru first column of dataframe to identify non-duplicates.  Return list of non-duplicates in reverse order
+def del_non_dupe(pivot_df):
+    pop_list = []
+    found = False
+    for i in range(0, len(pivot_df.index.values) - 1):
+        a = pivot_df.index[i][0]
+        b = pivot_df.index[i + 1][0]
+        if a == b:
+            found = True
+            continue
+        elif found:
+            found = False
+            continue
+        else:
+            pop_list.insert(0, i)
+
+    #return pop_list
+
+    for sku in pop_list:
+        pivot_df.drop(pivot_df.index[sku], inplace=True)
+
+
+# Go through each page and remove the first 7 lines excluding the third and fourth line
+# which has all the info for further processing
+def remove_lines(p):
+    temp_list = []
+    for x in range(0, 7):
+        # 2 indicates the third line with the invoice#, date, customer# and SalesRep ID
+        # 3 indicates the fourth line for the Order #
+        if x == 2 or x == 3:
+            # Save line into temporary list to be put back into list
+            temp_list.append(p.list_items[0])
+            p.list_items.pop(0)
+        else:
+            p.list_items.pop(0)
+
+    # Put back the saved line on top of page after the unnecessary lines have been removed
+    for i in temp_list:
+        p.list_items.insert(0, i)
+
+    # Remove the last lines of the page including blanks
+    while p.list_items[-1][0] == "" or len(p.list_items[-1]) == 0:
+        del p.list_items[-1]
+
 # format the Unit Price Field
 def format_currency(x):
     return "${:.2f}".format((x / 10))
@@ -133,7 +177,7 @@ def set_currency(writer, sheet_name, column):
     workbook = writer.book
     worksheet = writer.sheets[sheet_name]
 
-    money_fmt = workbook.add_format({'num_format': '$#,###.00', 'bold': True})
+    money_fmt = workbook.add_format({'num_format': '$#,##0.00', 'bold': True})
     worksheet.set_column(column, 12, money_fmt)
 
 
@@ -153,13 +197,16 @@ for item in line_reader:
         p.list_items.append(item)
     else:
         #print('Not Found')
+        remove_lines(p)
         pages.append(p)
 
     # Add last page
     if sub_count == count:
+        remove_lines(p)
         pages.append(p)
 
 
+'''
 # Go through each page and remove the first 7 lines excluding the third and fourth line
 # which has all the info for further processing
 for item in pages:
@@ -182,7 +229,7 @@ for item in pages:
     while item.list_items[-1][0] == "" or len(item.list_items[-1]) == 0:
         del item.list_items[-1]
 
-
+'''
 
 # Go through each page to extract all the necessary information
 for p in pages:
@@ -319,17 +366,11 @@ df['INVOICE #'] = pd.to_numeric(df['INVOICE #'], errors='coerce')
 df['QUANTITY'] = pd.to_numeric(df['QUANTITY'], errors='coerce')
 
 
-#df['UNIT PRICE'] = pd.to_numeric(df['UNIT PRICE'], errors='coerce')
+
 #df['UNIT PRICE']= df['UNIT PRICE'].apply(format_currency)
-#df['UNIT PRICE'] = pd.to_numeric(df['UNIT PRICE'], errors='coerce').map(('${:,.2f}'.format))
-df['UNIT PRICE'] = pd.to_numeric(df['UNIT PRICE'], errors='coerce')
-#df['UNIT PRICE'] = df['UNIT PRICE'].map(('${:,.2f}'.format))
-#df['DATE'] = pd.to_datetime(df['DATE'], errors='coerce')
+df['UNIT PRICE'] = pd.to_numeric(df['UNIT PRICE'], errors='coerce').map(('${:,.2f}'.format))
 
 df['DATE'] = pd.to_datetime(df['DATE'], errors='coerce').dt.date
-
-#df['DATE'] = df['DATE'].dt.strftime('%m/%d/%Y')
-
 
 
 
@@ -349,31 +390,12 @@ test_pivot_df6 = pd.pivot_table(df, index=['SKU #', 'UNIT PRICE', 'DESCRIPTION',
 '''
 
 
-#test_pivot_df6.ffill(inplace=True)
-#test_pivot_df6.reset_index()
 
-pop_list = []
-found = False
-for i in range(0, len(test_pivot_df.index.values)-1):
-    a = test_pivot_df.index[i][0]
-    b = test_pivot_df.index[i+1][0]
-    if a == b:
-        found = True
-        continue
-    elif found:
-        found = False
-        continue
-    else:
-        pop_list.insert(0, i)
+# Delete non-repeating row items
+del_non_dupe(test_pivot_df)
+del_non_dupe(test_pivot_df2)
 
 
-for sku in pop_list:
-    test_pivot_df.drop(test_pivot_df.index[sku], inplace=True)
-
-
-
-print('Dup List: ', pop_list)
-print('Hello: ', test_pivot_df.index[1][0])
 
 
 #invoice_history.append(['ORDER #', 'INVOICE #', 'DATE', 'CUSTOMER ID', 'SALES REP', 'SKU #', 'DESCRIPTION',
@@ -392,14 +414,6 @@ df.to_excel(writer, sheet_name='Invoice Info', index=False)
 
 
 
-#test_pivot_df2.to_excel(writer, sheet_name='Price Audit')
-'''
-workbook = writer.book
-worksheet = writer.sheets['Invoice Info']
-
-money_fmt = workbook.add_format({'num_format': '$#,###.00', 'bold': True})
-worksheet.set_column('I:I', 12, money_fmt)
-'''
 
 test_pivot_df.to_excel(writer, sheet_name='Item Number Audit')
 test_pivot_df2.to_excel(writer, sheet_name='Price Audit')
@@ -408,8 +422,8 @@ test_pivot_df2.to_excel(writer, sheet_name='Price Audit')
 #test_pivot_df5.to_excel(writer, sheet_name='Pivot5')
 #test_pivot_df6.to_excel(writer, sheet_name='Pivot6')
 
-set_currency(writer, 'Price Audit', 'B:B')
-set_currency(writer, 'Invoice Info', 'I:I')
+#set_currency(writer, 'Price Audit', 'B:B')
+#set_currency(writer, 'Invoice Info', 'I:I')
 #set_currency(writer, 'Item Number Audit', 'H:H')
 #set_currency(writer, 'Price Audit', 'B:B')
 
