@@ -5,20 +5,22 @@ import numpy as np
 import datefinder
 import datetime
 import xlsxwriter
+from xlsxwriter.utility import xl_rowcol_to_cell
 from openpyxl import Workbook
 
-datafile = open('Invoice_History.csv', 'r')
+#12/15/18
+datafile = open('Invoice_History6.csv', 'r')
 line_reader = list(csv.reader(datafile))
 
-# df = pd.DataFrame(columns=['ORDER #', 'INVOICE #', 'DATE', 'CUSTOMER ID', 'SALES REP', 'SKU #', 'DESCRIPTION',
-# 'QUANTITY', 'UNIT PRICE'])
+#df = pd.DataFrame(columns=['ORDER #', 'INVOICE #', 'DATE', 'CUSTOMER ID', 'SALES REP', 'SKU #', 'DESCRIPTION',
+                           #'QUANTITY', 'UNIT PRICE'])
 labels = ['ORDER #', 'INVOICE #', 'DATE', 'CUSTOMER ID', 'SALES REP', 'SKU #', 'DESCRIPTION',
-          'QUANTITY', 'UNIT PRICE']
+           'QUANTITY', 'UNIT PRICE', 'CREDIT MEMO']
 
 pages = []
 invoice_history = []
-# invoice_history.append(['ORDER #', 'INVOICE #', 'DATE', 'CUSTOMER ID', 'SALES REP', 'SKU #', 'DESCRIPTION',
-# 'QUANTITY', 'UNIT PRICE'])
+#invoice_history.append(['ORDER #', 'INVOICE #', 'DATE', 'CUSTOMER ID', 'SALES REP', 'SKU #', 'DESCRIPTION',
+                        #'QUANTITY', 'UNIT PRICE'])
 count = 0
 sub_count = 0
 line_item = 0
@@ -44,6 +46,7 @@ class Order:
         self.customer_num = ''
         self.date = ''
         self.sales_rep = ''
+        self.credit_memo = ''
 
 
 def check_num(s):
@@ -62,23 +65,25 @@ def check_double(s):
         return False
 
 
+#Returns the Name associated with the Sales Rep #
 def get_name(num):
     switcher = {
-        5: "Chi Nong",
-        7: "Michelle Nong",
-        11: "George Nguyen",
-        12: "Terry Nguyen",
-        14: "Larry Nguyen",
-        15: "Linh Ung",
-        16: "Pierre Bach",
-        17: "Kenny Nguyen",
-        18: "Phat Tran",
-        19: "Minh Bui",
-        20: "Sang Tran"
-    }
+            5: "Chi Nong",
+            7: "Michelle Nong",
+            11: "George Nguyen",
+            12: "Terry Nguyen",
+            14: "Larry Nguyen",
+            15: "Linh Ung",
+            16: "Pierre Bach",
+            17: "Kenny Nguyen",
+            18: "Phat Tran",
+            19: "Minh Bui",
+            20: "Sang Tran"
+        }
     return switcher.get(num, "NA#")
 
 
+'''
 # Return number of dates found in a string
 def find_dates(date_string):
     matches = datefinder.find_dates(date_string, strict=True)
@@ -86,10 +91,20 @@ def find_dates(date_string):
     for match in matches:
         num_match += 1
     return num_match
+'''
+
+# Return the date string if found
+def find_dates(date_string):
+    temp_string = date_string.replace(":", "")
+    matches = datefinder.find_dates(temp_string, strict=True)
+    for match in matches:
+        return match
+
+    return " "
 
 
 def find_quantity(string):
-    hyphen_found = string.find('-', len(string) - 1, len(string))
+    hyphen_found = string.find('-', len(string)-1, len(string))
     test_string = string
     if hyphen_found >= 0:
         return check_num(test_string.replace("-", ""))
@@ -100,7 +115,7 @@ def find_quantity(string):
 
 
 def find_unit_price(string):
-    hyphen_found = string.find('-', len(string) - 1, len(string))
+    hyphen_found = string.find('-', len(string)-1, len(string))
     test_string = string
     if hyphen_found >= 0:
         return check_double(test_string.replace("-", ""))
@@ -108,27 +123,90 @@ def find_unit_price(string):
         return check_double(string)
 
 
+# Go thru first column of dataframe to identify non-duplicates.  Return list of non-duplicates in reverse order
+def del_non_dupe(pivot_df):
+    pop_list = []
+    found = False
+    for i in range(0, len(pivot_df.index.values) - 1):
+        a = pivot_df.index[i][0]
+        b = pivot_df.index[i + 1][0]
+        if a == b:
+            found = True
+            continue
+        elif found:
+            found = False
+            continue
+        else:
+            pop_list.insert(0, i)
+
+    #return pop_list
+
+    for sku in pop_list:
+        pivot_df.drop(pivot_df.index[sku], inplace=True)
+
+
+# Go through each page and remove the first 7 lines excluding the third and fourth line
+# which has all the info for further processing
+def remove_lines(p):
+    temp_list = []
+    for x in range(0, 7):
+        # 2 indicates the third line with the invoice#, date, customer# and SalesRep ID
+        # 3 indicates the fourth line for the Order #
+        if x == 2 or x == 3:
+            # Save line into temporary list to be put back into list
+            temp_list.append(p.list_items[0])
+            p.list_items.pop(0)
+        else:
+            p.list_items.pop(0)
+
+    # Put back the saved line on top of page after the unnecessary lines have been removed
+    for i in temp_list:
+        p.list_items.insert(0, i)
+
+    # Remove the last lines of the page including blanks
+    while p.list_items[-1][0] == "" or len(p.list_items[-1]) == 0:
+        del p.list_items[-1]
+
+# format the Unit Price Field
+def format_currency(x):
+    return "${:.2f}".format((x / 10))
+
+
+# Convert Unit Price to Currency field in Excel
+def set_currency(writer, sheet_name, column):
+    workbook = writer.book
+    worksheet = writer.sheets[sheet_name]
+
+    money_fmt = workbook.add_format({'num_format': '$#,##0.00', 'bold': True})
+    worksheet.set_column(column, 12, money_fmt)
+
+
 for item in line_reader:
     count += 1
+
 
 # Break down the CSV file into list of pages
 for item in line_reader:
     sub_count += 1
     if len(item) > 0 and item[0].find('Date') >= 0:
-        # print('Found')
+        #print('Found')
         p = Page()
         p.list_items.append(item)
     elif len(item) > 0:
-        # print('line')
+        #print('line')
         p.list_items.append(item)
     else:
-        # print('Not Found')
+        #print('Not Found')
+        remove_lines(p)
         pages.append(p)
 
     # Add last page
     if sub_count == count:
+        remove_lines(p)
         pages.append(p)
 
+
+'''
 # Go through each page and remove the first 7 lines excluding the third and fourth line
 # which has all the info for further processing
 for item in pages:
@@ -142,17 +220,18 @@ for item in pages:
             item.list_items.pop(0)
         else:
             item.list_items.pop(0)
-
     # Put back the saved line on top of page after the unnecessary lines have been removed
     for i in temp_list:
         item.list_items.insert(0, i)
-
     # Remove the last lines of the page including blanks
     while item.list_items[-1][0] == "" or len(item.list_items[-1]) == 0:
         del item.list_items[-1]
+'''
 
 # Go through each page to extract all the necessary information
 for p in pages:
+    # Credit Memo flag to False until credit memo page is found
+    cmemo = False
 
     # If page has no info then continue
     if len(p.list_items) == 2:
@@ -172,18 +251,23 @@ for p in pages:
     if check_num(p.list_items[0][-1]):
         info.sales_rep = get_name(int(p.list_items[0][-1]))
     else:
+        # Check if the page is a Credit Memo
         info.sales_rep = get_name(int(p.list_items[0][-2]))
+        info.credit_memo = 'CREDIT MEMO'
+        cmemo = True
 
     # Go through Invoice line to extract the appropriate data
     for string in p.list_items[0]:
+
+
         if customer_blank:
             info.customer_num = string
             break
 
         if check_num(string):
             info.invoice_num = string
-        elif find_dates(string) > 0:
-            info.date = string
+        elif find_dates(string) != " ":
+            info.date = find_dates(string)
         elif string.find('Customer:') >= 0:
             info.customer_num = string.rsplit("Customer:")[-1].strip()
             if len(info.customer_num):
@@ -192,6 +276,7 @@ for p in pages:
                 customer_blank = True
         else:
             continue
+
 
     # Remove line with Invoice number
     p.list_items.pop(0)
@@ -222,6 +307,10 @@ for p in pages:
                             temp_line = '-' + item.quantity.replace("-", "")
                             item.quantity = temp_line
 
+                        # Check if item is a credit memo.  If so, make the quantity a negative number
+                        if cmemo and item.quantity.find('-') == -1:
+                            item.quantity = '-' + item.quantity
+
                         line.pop(0)
                         break
 
@@ -229,15 +318,7 @@ for p in pages:
                         item.description = item.description + line[0]
                         line.pop(0)
 
-                '''
-                # Go through rest of list to find Unit Price.
-                for i in range(0, len(line)):
-                    if check_num(line[i]):
-                        item.quantity = line[i]
-                    elif check_double(line[i]):
-                        item.unit_price = line[i]
-                        break
-                '''
+
                 # Go through rest of list to find Unit Price.
                 for i in range(0, len(line)):
                     if check_num(line[i]):
@@ -257,77 +338,92 @@ for p in pages:
         if item.sku != '':
             line_item += 1
             invoice_history.append([info.order_num, info.invoice_num, info.date, info.customer_num, info.sales_rep,
-                                    item.sku, item.description, item.quantity, item.unit_price])
+                                    item.sku, item.description, item.quantity, item.unit_price, info.credit_memo])
 
-            # print(info.order_num, info.invoice_num, info.date, info.customer_num, info.sales_rep, item.sku,
-            # item.description, item.quantity, item.unit_price)
+            #print(info.order_num, info.invoice_num, info.date, info.customer_num, info.sales_rep, item.sku,
+                  #item.description, item.quantity, item.unit_price)
 
 '''
 for i in pages:
     for x in i.list_items:
         print(x)
-
-
-
 for item in invoice_history:
     print(item)
 '''
 
 df = pd.DataFrame(invoice_history, columns=labels)
 
+
+
 df['ORDER #'] = pd.to_numeric(df['ORDER #'], errors='coerce')
 df['INVOICE #'] = pd.to_numeric(df['INVOICE #'], errors='coerce')
 df['QUANTITY'] = pd.to_numeric(df['QUANTITY'], errors='coerce')
-df['UNIT PRICE'] = pd.to_numeric(df['UNIT PRICE'], errors='coerce')
-# df['DATE'] = pd.to_datetime(df['DATE'], errors='coerce')
+
+
+
+#df['UNIT PRICE']= df['UNIT PRICE'].apply(format_currency)
+df['UNIT PRICE'] = pd.to_numeric(df['UNIT PRICE'], errors='coerce').map(('${:,.2f}'.format))
 
 df['DATE'] = pd.to_datetime(df['DATE'], errors='coerce').dt.date
 
-# df['DATE'] = df['DATE'].dt.strftime('%m/%d/%Y')
 
 
 test_pivot_df = pd.pivot_table(df, index=['SKU #', 'DESCRIPTION'], aggfunc='first')
-test_pivot_df2 = pd.pivot_table(df, index=['SKU #', 'DESCRIPTION', 'UNIT PRICE', 'CUSTOMER ID',
-                                           'SALES REP'], aggfunc='first')
+test_pivot_df.drop(columns=['ORDER #', 'QUANTITY'], inplace=True)
+
+test_pivot_df2 = pd.pivot_table(df, index=['SKU #', 'UNIT PRICE', 'DESCRIPTION'], aggfunc='first')
+test_pivot_df2.drop(columns=['ORDER #'], inplace=True)
+
+'''
 test_pivot_df3 = pd.pivot_table(df, index=['SKU #', 'DESCRIPTION', 'SALES REP'], values='UNIT PRICE', aggfunc='first')
 test_pivot_df4 = pd.pivot_table(df, index=['SKU #', 'DESCRIPTION', 'SALES REP', 'UNIT PRICE'], aggfunc='first')
 test_pivot_df5 = pd.pivot_table(df, index=['SKU #', 'DESCRIPTION', 'SALES REP', 'CUSTOMER ID',
                                            'QUANTITY'], values='UNIT PRICE', aggfunc=np.sum)
 test_pivot_df6 = pd.pivot_table(df, index=['SKU #', 'UNIT PRICE', 'DESCRIPTION', 'SALES REP', 'CUSTOMER ID',
                                            'QUANTITY'], aggfunc='first')
+'''
 
-# test_pivot_df6.ffill(inplace=True)
-# test_pivot_df6.reset_index()
-print(test_pivot_df6)
 
+
+# Delete non-repeating row items
+del_non_dupe(test_pivot_df)
+del_non_dupe(test_pivot_df2)
+
+
+
+
+#invoice_history.append(['ORDER #', 'INVOICE #', 'DATE', 'CUSTOMER ID', 'SALES REP', 'SKU #', 'DESCRIPTION',
+                        #'QUANTITY', 'UNIT PRICE'])
+
+#
 # Create a Pandas Excel writer using XlsxWriter as the engine.
-writer = pd.ExcelWriter('pivot_sample1.xlsx', engine='xlsxwriter')
+writer = pd.ExcelWriter('pivot_sample8.xlsx', engine='xlsxwriter')
+
+
 
 # Convert the dataframe to an XlsxWriter Excel object.
 df.to_excel(writer, sheet_name='Invoice Info', index=False)
 
-test_pivot_df.to_excel(writer, sheet_name='Pivot1')
-test_pivot_df2.to_excel(writer, sheet_name='Pivot2')
-test_pivot_df3.to_excel(writer, sheet_name='Pivot3')
-test_pivot_df4.to_excel(writer, sheet_name='Pivot4')
-test_pivot_df5.to_excel(writer, sheet_name='Pivot5')
-test_pivot_df6.to_excel(writer, sheet_name='Pivot6')
+
+
+
+
+
+test_pivot_df.to_excel(writer, sheet_name='Item Number Audit')
+test_pivot_df2.to_excel(writer, sheet_name='Price Audit')
+#test_pivot_df3.to_excel(writer, sheet_name='Pivot3')
+#test_pivot_df4.to_excel(writer, sheet_name='Pivot4')
+#test_pivot_df5.to_excel(writer, sheet_name='Pivot5')
+#test_pivot_df6.to_excel(writer, sheet_name='Pivot6')
+
+#set_currency(writer, 'Price Audit', 'B:B')
+#set_currency(writer, 'Invoice Info', 'I:I')
+#set_currency(writer, 'Item Number Audit', 'H:H')
+#set_currency(writer, 'Price Audit', 'B:B')
 
 # Close the Pandas Excel writer and output the Excel file.
 writer.save()
 
-# test_pivot_df2 = pd.pivot_table(df, index=['SKU #', 'DESCRIPTION', 'SALES REP'], values='UNIT PRICE', aggfunc='first')
-# print(test_pivot_df2)
-
-# test_pivot_df.to_excel('out_pivot11.xlsx')
-# test_pivot_df2.to_excel('out_pivot4.xlsx')
-
-# df.to_excel('out_invoice_history.xlsx', index=False)
-# pd.DataFrame(invoice_history).to_excel('out_invoice_history.xlsx', header=False, index=False)
-
-# print(invoice_history)
+#print(invoice_history)
 print('Pages Found: ', len(pages))
 print('Line Items: ', line_item)
-
-# df = pd.DataFrame(columns=['ORDER #', 'INVOICE #', 'DATE', 'CUSTOMER ID', 'SALES REP', 'SKU #', 'DESCRIPTION',
-# 'QUANTITY', 'UNIT PRICE'])

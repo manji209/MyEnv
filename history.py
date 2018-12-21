@@ -181,64 +181,14 @@ def set_currency(writer, sheet_name, column):
     worksheet.set_column(column, 12, money_fmt)
 
 
-for item in line_reader:
-    count += 1
-
-
-# Break down the CSV file into list of pages
-for item in line_reader:
-    sub_count += 1
-    if len(item) > 0 and item[0].find('Date') >= 0:
-        #print('Found')
-        p = Page()
-        p.list_items.append(item)
-    elif len(item) > 0:
-        #print('line')
-        p.list_items.append(item)
-    else:
-        #print('Not Found')
-        remove_lines(p)
-        pages.append(p)
-
-    # Add last page
-    if sub_count == count:
-        remove_lines(p)
-        pages.append(p)
-
-
-'''
-# Go through each page and remove the first 7 lines excluding the third and fourth line
-# which has all the info for further processing
-for item in pages:
-    temp_list = []
-    for x in range(0, 7):
-        # 2 indicates the third line with the invoice#, date, customer# and SalesRep ID
-        # 3 indicates the fourth line for the Order #
-        if x == 2 or x == 3:
-            # Save line into temporary list to be put back into list
-            temp_list.append(item.list_items[0])
-            item.list_items.pop(0)
-        else:
-            item.list_items.pop(0)
-
-    # Put back the saved line on top of page after the unnecessary lines have been removed
-    for i in temp_list:
-        item.list_items.insert(0, i)
-
-    # Remove the last lines of the page including blanks
-    while item.list_items[-1][0] == "" or len(item.list_items[-1]) == 0:
-        del item.list_items[-1]
-
-'''
-
-# Go through each page to extract all the necessary information
-for p in pages:
+def extract_info(p):
     # Credit Memo flag to False until credit memo page is found
     cmemo = False
+    global line_item
 
     # If page has no info then continue
     if len(p.list_items) == 2:
-        continue
+        return False
 
     info = Order()
 
@@ -262,7 +212,6 @@ for p in pages:
     # Go through Invoice line to extract the appropriate data
     for string in p.list_items[0]:
 
-
         if customer_blank:
             info.customer_num = string
             break
@@ -279,7 +228,6 @@ for p in pages:
                 customer_blank = True
         else:
             continue
-
 
     # Remove line with Invoice number
     p.list_items.pop(0)
@@ -321,7 +269,6 @@ for p in pages:
                         item.description = item.description + line[0]
                         line.pop(0)
 
-
                 # Go through rest of list to find Unit Price.
                 for i in range(0, len(line)):
                     if check_num(line[i]):
@@ -343,8 +290,35 @@ for p in pages:
             invoice_history.append([info.order_num, info.invoice_num, info.date, info.customer_num, info.sales_rep,
                                     item.sku, item.description, item.quantity, item.unit_price, info.credit_memo])
 
-            #print(info.order_num, info.invoice_num, info.date, info.customer_num, info.sales_rep, item.sku,
-                  #item.description, item.quantity, item.unit_price)
+
+
+for item in line_reader:
+    count += 1
+
+
+# Break down the CSV file into list of pages
+for item in line_reader:
+    sub_count += 1
+    if len(item) > 0 and item[0].find('Date') >= 0:
+        #print('Found')
+        p = Page()
+        p.list_items.append(item)
+    elif len(item) > 0:
+        #print('line')
+        p.list_items.append(item)
+    else:
+        #print('Not Found')
+        remove_lines(p)
+        extract_info(p)
+        pages.append(p)
+
+    # Add last page
+    if sub_count == count:
+        remove_lines(p)
+        extract_info(p)
+        pages.append(p)
+
+
 
 '''
 for i in pages:
