@@ -5,6 +5,7 @@ import numpy as np
 import datefinder
 import datetime
 import xlsxwriter
+from xlsxwriter.utility import xl_rowcol_to_cell
 from openpyxl import Workbook
 
 #12/15/18
@@ -64,6 +65,7 @@ def check_double(s):
         return False
 
 
+#Returns the Name associated with the Sales Rep #
 def get_name(num):
     switcher = {
             5: "Chi Nong",
@@ -91,7 +93,7 @@ def find_dates(date_string):
     return num_match
 '''
 
-# Return number of dates found in a string
+# Return the date string if found
 def find_dates(date_string):
     temp_string = date_string.replace(":", "")
     matches = datefinder.find_dates(temp_string, strict=True)
@@ -119,6 +121,20 @@ def find_unit_price(string):
         return check_double(test_string.replace("-", ""))
     else:
         return check_double(string)
+
+
+# format the Unit Price Field
+def format_currency(x):
+    return "${:.2f}".format((x / 10))
+
+
+# Convert Unit Price to Currency field in Excel
+def set_currency(writer, sheet_name, column):
+    workbook = writer.book
+    worksheet = writer.sheets[sheet_name]
+
+    money_fmt = workbook.add_format({'num_format': '$#,###.00', 'bold': True})
+    worksheet.set_column(column, 12, money_fmt)
 
 
 for item in line_reader:
@@ -301,7 +317,13 @@ df = pd.DataFrame(invoice_history, columns=labels)
 df['ORDER #'] = pd.to_numeric(df['ORDER #'], errors='coerce')
 df['INVOICE #'] = pd.to_numeric(df['INVOICE #'], errors='coerce')
 df['QUANTITY'] = pd.to_numeric(df['QUANTITY'], errors='coerce')
+
+
+#df['UNIT PRICE'] = pd.to_numeric(df['UNIT PRICE'], errors='coerce')
+#df['UNIT PRICE']= df['UNIT PRICE'].apply(format_currency)
+#df['UNIT PRICE'] = pd.to_numeric(df['UNIT PRICE'], errors='coerce').map(('${:,.2f}'.format))
 df['UNIT PRICE'] = pd.to_numeric(df['UNIT PRICE'], errors='coerce')
+#df['UNIT PRICE'] = df['UNIT PRICE'].map(('${:,.2f}'.format))
 #df['DATE'] = pd.to_datetime(df['DATE'], errors='coerce')
 
 df['DATE'] = pd.to_datetime(df['DATE'], errors='coerce').dt.date
@@ -361,19 +383,35 @@ print('Hello: ', test_pivot_df.index[1][0])
 # Create a Pandas Excel writer using XlsxWriter as the engine.
 writer = pd.ExcelWriter('pivot_sample7.xlsx', engine='xlsxwriter')
 
+
+
 # Convert the dataframe to an XlsxWriter Excel object.
 df.to_excel(writer, sheet_name='Invoice Info', index=False)
 
+
+
+
+
+#test_pivot_df2.to_excel(writer, sheet_name='Price Audit')
+'''
+workbook = writer.book
+worksheet = writer.sheets['Invoice Info']
+
+money_fmt = workbook.add_format({'num_format': '$#,###.00', 'bold': True})
+worksheet.set_column('I:I', 12, money_fmt)
+'''
+
 test_pivot_df.to_excel(writer, sheet_name='Item Number Audit')
 test_pivot_df2.to_excel(writer, sheet_name='Price Audit')
-
 #test_pivot_df3.to_excel(writer, sheet_name='Pivot3')
 #test_pivot_df4.to_excel(writer, sheet_name='Pivot4')
 #test_pivot_df5.to_excel(writer, sheet_name='Pivot5')
 #test_pivot_df6.to_excel(writer, sheet_name='Pivot6')
 
-
-
+set_currency(writer, 'Price Audit', 'B:B')
+set_currency(writer, 'Invoice Info', 'I:I')
+#set_currency(writer, 'Item Number Audit', 'H:H')
+#set_currency(writer, 'Price Audit', 'B:B')
 
 # Close the Pandas Excel writer and output the Excel file.
 writer.save()
@@ -381,15 +419,3 @@ writer.save()
 #print(invoice_history)
 print('Pages Found: ', len(pages))
 print('Line Items: ', line_item)
-
-tempstring = 'created 01/15/2005 by ACME Inc. and associates Invoice : 11/15/18 created 01/15/2005 by ACME Inc. and associates'
-print('Dates Found: ', find_dates(tempstring))
-
-tempstring = tempstring.replace(":", "")
-
-tempstring2 = 'created: date: ok 01/15/2005 by ACME Inc. and associates date 11/15/18 created what: 01/15/2005 by ACME Inc. and associates'
-print('Dates Found: ', find_dates(tempstring2))
-
-tempstring = tempstring.replace(":", "")
-
-print(tempstring)
