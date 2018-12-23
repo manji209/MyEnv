@@ -125,6 +125,7 @@ def find_unit_price(string):
 
 # Go thru first column of dataframe to identify non-duplicates.  Return list of non-duplicates in reverse order
 def del_non_dupe(pivot_df):
+    print('Pivot index size: ', len(pivot_df.index.values))
     pop_list = []
     found = False
     for i in range(0, len(pivot_df.index.values) - 1):
@@ -139,10 +140,8 @@ def del_non_dupe(pivot_df):
         else:
             pop_list.insert(0, i)
 
-    #return pop_list
-
-    for sku in pop_list:
-        pivot_df.drop(pivot_df.index[sku], inplace=True)
+    # Delete non dupe rows from list above. In reverse order
+    pivot_df.drop(pivot_df.index[pop_list], inplace=True)
 
 
 # Go through each page and remove the first 7 lines excluding the third and fourth line
@@ -208,6 +207,7 @@ def extract_info(p):
         info.sales_rep = get_name(int(p.list_items[0][-2]))
         info.credit_memo = 'CREDIT MEMO'
         cmemo = True
+
 
     # Go through Invoice line to extract the appropriate data
     for string in p.list_items[0]:
@@ -292,6 +292,7 @@ def extract_info(p):
 
 
 
+
 for item in line_reader:
     count += 1
 
@@ -319,6 +320,7 @@ for item in line_reader:
         pages.append(p)
 
 
+print('Pages Created: ')
 
 '''
 for i in pages:
@@ -346,7 +348,7 @@ df['UNIT PRICE'] = pd.to_numeric(df['UNIT PRICE'], errors='coerce').map(('${:,.2
 
 df['DATE'] = pd.to_datetime(df['DATE'], errors='coerce').dt.date
 
-
+print('Dataframe to Numeric: ')
 
 test_pivot_df = pd.pivot_table(df, index=['SKU #', 'DESCRIPTION'], aggfunc='first')
 test_pivot_df.drop(columns=['ORDER #', 'QUANTITY'], inplace=True)
@@ -363,6 +365,7 @@ test_pivot_df6 = pd.pivot_table(df, index=['SKU #', 'UNIT PRICE', 'DESCRIPTION',
                                            'QUANTITY'], aggfunc='first')
 '''
 
+print('Pivot Table Created: ')
 
 
 # Delete non-repeating row items
@@ -370,23 +373,16 @@ del_non_dupe(test_pivot_df)
 del_non_dupe(test_pivot_df2)
 
 
-
+print('Delete non_dupe: ')
 
 #invoice_history.append(['ORDER #', 'INVOICE #', 'DATE', 'CUSTOMER ID', 'SALES REP', 'SKU #', 'DESCRIPTION',
                         #'QUANTITY', 'UNIT PRICE'])
 
-#
 # Create a Pandas Excel writer using XlsxWriter as the engine.
 writer = pd.ExcelWriter('pivot_sample7.xlsx', engine='xlsxwriter')
 
-
-
 # Convert the dataframe to an XlsxWriter Excel object.
 df.to_excel(writer, sheet_name='Invoice Info', index=False)
-
-
-
-
 
 
 test_pivot_df.to_excel(writer, sheet_name='Item Number Audit')
@@ -400,6 +396,9 @@ test_pivot_df2.to_excel(writer, sheet_name='Price Audit')
 #set_currency(writer, 'Invoice Info', 'I:I')
 #set_currency(writer, 'Item Number Audit', 'H:H')
 #set_currency(writer, 'Price Audit', 'B:B')
+
+
+print('Write to Excel: ')
 
 # Close the Pandas Excel writer and output the Excel file.
 writer.save()
