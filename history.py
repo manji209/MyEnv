@@ -292,10 +292,10 @@ def extract_info(p):
 
 
 
-
+'''
 for item in line_reader:
     count += 1
-
+'''
 
 # Break down the CSV file into list of pages
 for item in line_reader:
@@ -314,7 +314,7 @@ for item in line_reader:
         pages.append(p)
 
     # Add last page
-    if sub_count == count:
+    if sub_count == len(line_reader):
         remove_lines(p)
         extract_info(p)
         pages.append(p)
@@ -322,16 +322,6 @@ for item in line_reader:
 
 print('Pages Created: ')
 
-'''
-for i in pages:
-    for x in i.list_items:
-        print(x)
-
-
-
-for item in invoice_history:
-    print(item)
-'''
 
 df = pd.DataFrame(invoice_history, columns=labels)
 
