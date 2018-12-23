@@ -12,15 +12,14 @@ from openpyxl import Workbook
 datafile = open('Invoice_History6.csv', 'r')
 line_reader = list(csv.reader(datafile))
 
-#df = pd.DataFrame(columns=['ORDER #', 'INVOICE #', 'DATE', 'CUSTOMER ID', 'SALES REP', 'SKU #', 'DESCRIPTION',
-                           #'QUANTITY', 'UNIT PRICE'])
+# Column names for dataframe
 labels = ['ORDER #', 'INVOICE #', 'DATE', 'CUSTOMER ID', 'SALES REP', 'SKU #', 'DESCRIPTION',
            'QUANTITY', 'UNIT PRICE', 'CREDIT MEMO']
 
 pages = []
+
 invoice_history = []
-#invoice_history.append(['ORDER #', 'INVOICE #', 'DATE', 'CUSTOMER ID', 'SALES REP', 'SKU #', 'DESCRIPTION',
-                        #'QUANTITY', 'UNIT PRICE'])
+
 count = 0
 sub_count = 0
 line_item = 0
