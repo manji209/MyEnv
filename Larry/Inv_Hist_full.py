@@ -10,7 +10,8 @@ from openpyxl import Workbook
 
 # Based on history.py
 #12/15/18
-datafile = open('Inv_Hist_by_Inv_full_sept.csv', 'r')
+fname = 'Inv_Hist_by_Inv_full.csv'
+datafile = open(fname, 'r')
 line_reader = list(csv.reader(datafile))
 
 # Column names for dataframe
@@ -222,6 +223,26 @@ def extract_info(p):
         else:
             continue
 
+    if check_num(p.list_items[0][-1]):
+        info.sales_rep = get_name(int(p.list_items[0][-1]))
+    elif check_num(p.list_items[0][-2]):
+        # Check if the page is a Credit Memo
+        info.sales_rep = get_name(int(p.list_items[0][-2]))
+        info.credit_memo = 'CREDIT MEMO'
+        cmemo = True
+
+    elif check_num(p.list_items[0][-3]):
+    # Check if the page is a Credit Memo
+        info.sales_rep = get_name(int(p.list_items[0][-3]))
+        info.credit_memo = 'CREDIT MEMO'
+        cmemo = True
+    else:
+        # Check if the page is a Credit Memo
+        info.sales_rep = "NA"
+        info.credit_memo = 'CREDIT MEMO'
+        cmemo = True
+
+    '''
     # Get Sales rep number then convert to name
     if check_num(p.list_items[0][-1]):
         info.sales_rep = get_name(int(p.list_items[0][-1]))
@@ -229,7 +250,7 @@ def extract_info(p):
         info.sales_rep = get_name(int(p.list_items[0][-2]))
         info.credit_memo = 'CREDIT MEMO'
         cmemo = True
-    '''
+    
     elif check_num(p.list_items[0][-2]):
         # Check if the page is a Credit Memo
         info.sales_rep = get_name(int(p.list_items[0][-2]))
@@ -306,19 +327,33 @@ def extract_info(p):
         else:
             continue
 
-        for w in p.list_items[x+1]:
-            if find_num(w) == 2:
-                break
-            elif w == "":
-                continue
-            else:
-                item.description2 = item.description2 + " " + w
+        next_seq = True
+
+        try:
+            for w in p.list_items[x+1]:
+                # Check if next line is also a sequence number
+                if next_seq and check_num(w):
+                    item.description2 = 'NOT Available'
+                    break
+                else:
+                    next_seq = False
+
+                if find_num(w) == 2:
+                    break
+                elif w == "":
+                    continue
+                else:
+                    item.description2 = item.description2 + " " + w
+        except IndexError:
+            item.description2 = 'NOT Available'
 
         if item.sku != '':
             line_item += 1
             invoice_history.append([info.order_num, info.invoice_num, info.date, info.customer_num, info.sales_rep,
                                     item.sku, item.description.strip(), item.description2.strip(), item.quantity, item.unit_price,
                                     info.credit_memo])
+
+    return True
 
 
 '''
@@ -384,6 +419,37 @@ def extract_info(p):
 
 
 '''
+
+# Break down the CSV file into list of pages
+for item in line_reader:
+    sub_count += 1
+    if len(item) > 0 and item[0].find('Date') >= 0:
+        #print('Found')
+        p = Page()
+        p.list_items.append(item)
+    elif len(item) > 0:
+        #print('line')
+        p.list_items.append(item)
+    else:
+        #print('Not Found')
+        remove_lines(p)
+        if extract_info(p):
+            pages.append(p)
+        else:
+            continue
+
+    # Add last page
+    if sub_count == len(line_reader):
+        remove_lines(p)
+        if extract_info(p):
+            pages.append(p)
+        else:
+            continue
+
+
+print('Pages Created: ')
+
+'''
 # Break down the CSV file into list of pages
 for item in line_reader:
     sub_count += 1
@@ -410,8 +476,16 @@ for item in line_reader:
 print('Pages Created: ')
 
 '''
+
+'''
 for p in pages:
     print(*p.list_items, sep="\n")
+
+with open('out_file.txt', 'w') as f:
+    for p in pages:
+        for ln in p.list_items:
+            f.write("%s\n" % ln)
+
 '''
 
 
@@ -423,7 +497,7 @@ print(df)
 print(larry_df)
 
 # Create a Pandas Excel writer using XlsxWriter as the engine.
-writer = pd.ExcelWriter('pivot_inv_hist_full_sept.xlsx', engine='xlsxwriter')
+writer = pd.ExcelWriter('out_'+fname+'.xlsx', engine='xlsxwriter')
 
 # Convert the dataframe to an XlsxWriter Excel object.
 df.to_excel(writer, sheet_name='Invoice Info', index=False)
@@ -435,7 +509,7 @@ df.to_excel(writer, sheet_name='Invoice Info', index=False)
 test_pivot_df = pd.pivot_table(df, index=['CUSTOMER ID', 'SALES REP', 'DATE'], aggfunc='first')
 test_pivot_df.drop(columns=['ORDER #', 'INVOICE #'], inplace=True)
 
-test_larry_df = pd.pivot_table(larry_df, index=['CUSTOMER ID', 'DATE'], aggfunc='first')
+test_larry_df = pd.pivot_table(larry_df, index=['CUSTOMER ID', 'SKU #', 'DATE'], aggfunc='first')
 test_larry_df.drop(columns=['ORDER #', 'INVOICE #'], inplace=True)
 
 test_pivot_df.to_excel(writer, sheet_name='Customer ID Audit')
