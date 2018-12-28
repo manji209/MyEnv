@@ -176,10 +176,13 @@ def remove_lines(p):
         if  p.list_items[i][0] == 'Invoice' or p.list_items[i][0] == 'Order':
             temp_list.append(p.list_items[i])
             #p.list_items.pop(0)
-        elif check_num(p.list_items[i][0]):
-            temp_list.append(p.list_items[i])
-            item_found = True
-            #p.list_items.pop(0)
+        elif check_num(p.list_items[i][0]) and len(p.list_items[i]) > 1:
+            if p.list_items[i][1] != "":
+                temp_list.append(p.list_items[i])
+                item_found = True
+                #p.list_items.pop(0)
+            else:
+                continue
         elif item_found:
             temp_list.append(p.list_items[i])
             item_found = False
