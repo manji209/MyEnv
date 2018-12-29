@@ -10,7 +10,7 @@ from openpyxl import Workbook
 
 # Based on history.py
 #12/15/18
-fname = 'Inv_Hist_by_Inv_full.csv'
+fname = 'Inv_Hist_by_Inv_full_dec.csv'
 datafile = open(fname, 'r')
 line_reader = list(csv.reader(datafile))
 
@@ -489,12 +489,19 @@ with open('out_file.txt', 'w') as f:
 '''
 
 
+
 df = pd.DataFrame(invoice_history, columns=labels)
 df['DATE'] = pd.to_datetime(df['DATE'], errors='coerce').dt.date
 
 larry_df = df.loc[df['SALES REP'] == 'Larry Nguyen']
+
+larry_cust = larry_df['CUSTOMER ID']
+
+
 print(df)
 print(larry_df)
+print(larry_cust)
+
 
 # Create a Pandas Excel writer using XlsxWriter as the engine.
 writer = pd.ExcelWriter('out_'+fname+'.xlsx', engine='xlsxwriter')
@@ -514,7 +521,11 @@ test_larry_df.drop(columns=['ORDER #', 'INVOICE #'], inplace=True)
 
 test_pivot_df.to_excel(writer, sheet_name='Customer ID Audit')
 larry_df.to_excel(writer, sheet_name='Larry Nguyen')
+
+larry_cust.to_excel(writer, sheet_name='Customer')
 test_larry_df.to_excel(writer, sheet_name='Larry Nguyen Pivot')
+
+
 
 
 
