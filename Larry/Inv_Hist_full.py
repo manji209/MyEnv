@@ -10,13 +10,13 @@ from openpyxl import Workbook
 
 # Based on history.py
 #12/15/18
-fname = 'Inv_Hist_by_Inv_full_dec.csv'
+fname = 'Inv_Hist_by_Inv_full_oct.csv'
 datafile = open(fname, 'r')
 line_reader = list(csv.reader(datafile))
 
 # Column names for dataframe
 labels = ['ORDER #', 'INVOICE #', 'DATE', 'CUSTOMER ID', 'SALES REP', 'SKU #', 'DESC-1', 'DESC-2',
-           'QUANTITY', 'UNIT PRICE', 'CREDIT MEMO']
+           'QUANTITY', 'UNIT PRICE', 'UNIT COST', 'EXT-PRICE', 'EXT-COST', 'CREDIT MEMO']
 
 pages = []
 
@@ -39,6 +39,9 @@ class Product:
         self.description2 = ''
         self.quantity = ''
         self.unit_price = ''
+        self.unit_cost = ''
+        self.ext_price = ''
+        self.ext_cost = ''
 
 
 class Order:
@@ -66,6 +69,7 @@ def check_double(s):
     except ValueError:
         return False
 
+
 # Return 2 if double found, 1 if integer found, 0 if not a number
 def find_num(s):
     if check_double(s.replace("-", "").replace(",", "")) and s.find('.') >= 0:
@@ -74,6 +78,17 @@ def find_num(s):
         return 1
     else:
         return 0
+
+
+# Move the negative sign to the left side if negative value found
+def move_negative(num):
+    if num.find('-') >= 0:
+        temp_num = '-' + num.replace("-", "")
+        return temp_num.replace(",", "")
+    else:
+        return num.replace(",", "")
+
+
 
 #Returns the Name associated with the Sales Rep #
 def get_name(num):
@@ -282,6 +297,8 @@ def extract_info(p):
             if len(p.list_items[x]) == 1 or p.list_items[x][0] == '' or p.list_items[x][1] == '':
                 continue
             else:
+                # SKU # is the second element and EXT-PRICE info is at the end of the list
+                item.ext_price = move_negative(p.list_items[x][-1])
                 item.sku = p.list_items[x][1]
                 p.list_items[x].pop(0)
                 p.list_items[x].pop(0)
@@ -292,12 +309,16 @@ def extract_info(p):
                         continue
                     elif find_quantity(p.list_items[x][0]):
                         # item.quantity = '-' + line[0].replace("-", "")
+                        item.quantity = move_negative(p.list_items[x][0])
+
+                        '''
                         item.quantity = p.list_items[x][0]
 
                         # Move the negative sign to the left side if negative value found
                         if item.quantity.find('-') >= 0:
                             temp_line = '-' + item.quantity.replace("-", "")
                             item.quantity = temp_line
+                        '''
 
                         # Check if item is a credit memo.  If so, make the quantity a negative number
                         if cmemo and item.quantity.find('-') == -1:
@@ -314,15 +335,20 @@ def extract_info(p):
                 for i in range(0, len(p.list_items[x])):
                     if check_num(p.list_items[x][i]):
                         # if next number found is a integer than set it to the quantity
-                        item.quantity = p.list_items[x][i]
+                        item.quantity = move_negative(p.list_items[x][i])
                     elif find_unit_price(p.list_items[x][i]):
+                        item.unit_price = move_negative(p.list_items[x][i])
+                        break
 
+
+                        '''
                         item.unit_price = p.list_items[x][i]
                         # Move the negative sign to the left side if negative value found
                         if item.unit_price.find('-') >= 0:
                             temp_line = '-' + item.unit_price.replace("-", "")
                             item.unit_price = temp_line
                         break
+                        '''
 
         else:
             continue
@@ -338,7 +364,10 @@ def extract_info(p):
                 else:
                     next_seq = False
 
+                # Desc-2 is found when unit_cost is encountered.  EXT-COST is at the end of the list
                 if find_num(w) == 2:
+                    item.ext_cost = move_negative(p.list_items[x+1][-1])
+                    item.unit_cost = move_negative(w)
                     break
                 elif w == "":
                     continue
@@ -351,7 +380,7 @@ def extract_info(p):
             line_item += 1
             invoice_history.append([info.order_num, info.invoice_num, info.date, info.customer_num, info.sales_rep,
                                     item.sku, item.description.strip(), item.description2.strip(), item.quantity, item.unit_price,
-                                    info.credit_memo])
+                                    item.unit_cost, item.ext_price, item.ext_cost, info.credit_memo])
 
     return True
 
@@ -447,28 +476,34 @@ for item in line_reader:
             continue
 
 
+
 print('Pages Created: ')
 
+
+
 '''
+# FOR TESTING PURPOSES
 # Break down the CSV file into list of pages
 for item in line_reader:
     sub_count += 1
     if len(item) > 0 and item[0].find('Date') >= 0:
         #print('Found')
+        print(item)
         p = Page()
         p.list_items.append(item)
     elif len(item) > 0:
         #print('line')
+        print(item)
         p.list_items.append(item)
     else:
         #print('Not Found')
-        remove_lines(p)
+        #remove_lines(p)
         extract_info(p)
         pages.append(p)
 
     # Add last page
     if sub_count == len(line_reader):
-        remove_lines(p)
+        #remove_lines(p)
         extract_info(p)
         pages.append(p)
 
@@ -492,6 +527,17 @@ with open('out_file.txt', 'w') as f:
 
 df = pd.DataFrame(invoice_history, columns=labels)
 df['DATE'] = pd.to_datetime(df['DATE'], errors='coerce').dt.date
+df['ORDER #'] = pd.to_numeric(df['ORDER #'], errors='coerce')
+df['INVOICE #'] = pd.to_numeric(df['INVOICE #'], errors='coerce')
+df['QUANTITY'] = pd.to_numeric(df['QUANTITY'], errors='coerce')
+
+
+df['UNIT COST'] = pd.to_numeric(df['UNIT COST'], errors='coerce')
+df['UNIT PRICE'] = pd.to_numeric(df['UNIT PRICE'], errors='coerce')
+df['EXT-COST'] = pd.to_numeric(df['EXT-COST'], errors='coerce')
+df['EXT-PRICE'] = pd.to_numeric(df['EXT-PRICE'], errors='coerce')
+
+
 
 larry_df = df.loc[df['SALES REP'] == 'Larry Nguyen']
 
@@ -503,6 +549,8 @@ print(larry_df)
 print(larry_cust)
 
 
+
+
 # Create a Pandas Excel writer using XlsxWriter as the engine.
 writer = pd.ExcelWriter('out_'+fname+'.xlsx', engine='xlsxwriter')
 
@@ -510,7 +558,13 @@ writer = pd.ExcelWriter('out_'+fname+'.xlsx', engine='xlsxwriter')
 df.to_excel(writer, sheet_name='Invoice Info', index=False)
 #df['DATE'] = pd.to_datetime(df['DATE'], errors='coerce').dt.date
 
+# Get the xlsxwriter workbook and worksheet objects.
+workbook = writer.book
+worksheet = writer.sheets['Invoice Info']
 
+
+# Add some cell formats.
+format1 = workbook.add_format({'num_format': '#,##0.00'})
 
 
 test_pivot_df = pd.pivot_table(df, index=['CUSTOMER ID', 'SALES REP', 'DATE'], aggfunc='first')
@@ -520,9 +574,9 @@ test_larry_df = pd.pivot_table(larry_df, index=['CUSTOMER ID', 'SKU #', 'DATE'],
 test_larry_df.drop(columns=['ORDER #', 'INVOICE #'], inplace=True)
 
 test_pivot_df.to_excel(writer, sheet_name='Customer ID Audit')
-larry_df.to_excel(writer, sheet_name='Larry Nguyen')
+larry_df.to_excel(writer, sheet_name='Larry Nguyen', index=False)
 
-larry_cust.to_excel(writer, sheet_name='Customer')
+larry_cust.to_excel(writer, sheet_name='Customer', index=False)
 test_larry_df.to_excel(writer, sheet_name='Larry Nguyen Pivot')
 
 
@@ -530,6 +584,8 @@ test_larry_df.to_excel(writer, sheet_name='Larry Nguyen Pivot')
 
 
 writer.save()
+
+
 
 '''
 df = pd.DataFrame(invoice_history, columns=labels)
