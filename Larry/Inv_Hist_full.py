@@ -203,6 +203,11 @@ def set_currency(writer, sheet_name, column):
     worksheet.set_column(column, 12, money_fmt)
 
 
+def get_column_index(df1, name):
+    return df1.columns.get_loc(name)
+
+
+
 def extract_info(p):
     # Credit Memo flag to False until credit memo page is found
     cmemo = False
@@ -566,23 +571,44 @@ worksheet = writer.sheets['Invoice Info']
 # Add some cell formats.
 format1 = workbook.add_format({'num_format': '#,##0.00'})
 
+# Format the columns with number, double
+worksheet.set_column(df.columns.get_loc("UNIT PRICE"), df.columns.get_loc("EXT-COST"), None, format1)
+
 
 test_pivot_df = pd.pivot_table(df, index=['CUSTOMER ID', 'SALES REP', 'DATE'], aggfunc='first')
 test_pivot_df.drop(columns=['ORDER #', 'INVOICE #'], inplace=True)
 
 test_larry_df = pd.pivot_table(larry_df, index=['CUSTOMER ID', 'SKU #', 'DATE'], aggfunc='first')
-test_larry_df.drop(columns=['ORDER #', 'INVOICE #'], inplace=True)
+test_larry_df.drop(columns=['ORDER #', 'INVOICE #', 'SALES REP'], inplace=True)
+
+print('Column Index Value before: ', test_larry_df.columns.get_loc("EXT-COST"))
+print('Column Index Value before: ', test_larry_df.columns.get_loc("EXT-PRICE"))
+
+column_order = ['DESC-1', 'DESC-2', 'QUANTITY', 'UNIT PRICE', 'UNIT COST', 'EXT-PRICE', 'EXT-COST', 'CREDIT MEMO']
+test_larry_df = test_larry_df.reindex(columns=column_order)
+#test_larry_df = test_larry_df.reindex_axis(column_order, axis=1)
+
 
 test_pivot_df.to_excel(writer, sheet_name='Customer ID Audit')
 larry_df.to_excel(writer, sheet_name='Larry Nguyen', index=False)
 
 larry_cust.to_excel(writer, sheet_name='Customer', index=False)
+
+
 test_larry_df.to_excel(writer, sheet_name='Larry Nguyen Pivot')
 
 
 
+worksheet2 = writer.sheets['Larry Nguyen Pivot']
+worksheet2.set_column(6, 6, None, format1)
+#worksheet2.set_column(test_larry_df.columns.get_loc("EXT-COST"), test_larry_df.columns.get_loc("EXT-COST"), None, format1)
+#worksheet2.set_column(test_larry_df.columns.get_loc("EXT-PRICE"), test_larry_df.columns.get_loc("EXT-PRICE"), None, format1)
 
+#worksheet2.set_column('J:J', None, format1)
 
+print('Column Index Value: ', test_larry_df.columns.get_loc("EXT-COST"))
+print('Column Index Value: ', test_larry_df.columns.get_loc("EXT-PRICE"))
+print('Column Index Value: ', test_larry_df.columns.get_loc("DESC-1"))
 writer.save()
 
 
