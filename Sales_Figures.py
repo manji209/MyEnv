@@ -5,7 +5,7 @@ import datetime
 
 yr = 2017
 
-
+# Create a Pandas Excel writer using XlsxWriter as the engine.
 writer = pd.ExcelWriter('Sales_Figures_2017_2018.xlsx', engine='xlsxwriter')
 
 def run_report(writer, yr):
@@ -40,17 +40,13 @@ def run_report(writer, yr):
     print(sales_df.columns.values)
 
     '''
-    # Create a Pandas Excel writer using XlsxWriter as the engine.
-    writer = pd.ExcelWriter('Sales_Figures_2018.xlsx', engine='xlsxwriter')
-    
+   
     # Convert the dataframe to an XlsxWriter Excel object.
     #pivot_dfs.to_excel(writer, sheet_name='Sales_Figures', index=True)
     qty_df.to_excel(writer, sheet_name='Qty Sum', index=True)
     sales_df.to_excel(writer, sheet_name='Sales Sum', index=True)
     
-    
-    
-    writer.save()
+ 
     '''
 
     # Create a Pandas Excel writer using XlsxWriter as the engine.
