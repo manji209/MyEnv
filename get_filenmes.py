@@ -25,7 +25,8 @@ d = ["Q:/Nguyen Graphic Designer Work/Nguyen Work 1 - 139 items",
      "Q:/Nguyen Graphic Designer Work/Set 11 - 133 photos",
      "Q:/Nguyen Graphic Designer Work/Set 12 - 43 photos",
      "Q:/Nguyen Graphic Designer Work/Set 13 - 105 photos",
-     "Q:/Nguyen Graphic Designer Work/Set 14 - 234 photos"]
+     "Q:/Nguyen Graphic Designer Work/Set 14 - 234 photos"
+     "Q:/Nguyen Graphic Designer Work/SET 15/JPEG/Without Watermark"]
 
 # Traverse each directory to get filenames
 for i in range(0, len(d)):
@@ -38,6 +39,6 @@ pics = list(set(pics))
 pics.sort()
 
 df = pd.DataFrame(pics)
-df.to_csv('list_names_sorted.csv', index=False)
+df.to_csv('list_names_sorted_04.csv', index=False)
 
 print(pics)
