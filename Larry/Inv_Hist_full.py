@@ -188,7 +188,32 @@ def set_currency(writer, sheet_name, column):
     worksheet.set_column(column, 12, money_fmt)
 
 
+def process_invoice():
+
+
+def process_order():
+
+
+def process_item():
+
+
 def extract_info(p):
+
+
+    for x in range(0, len(p.list_items)):
+        info = Order()
+        item = Product()
+
+        if p.list_items[0][0] == 'Invoice':
+            process_invoice(p.list_items[0][0], info, item)
+        elif p.list_items[0][0] == 'Order':
+            process_order(p.list_items[0][0], info, item)
+        elif check_num(p.list_items[0][0]):
+            process_item(p.list_items[0][0], info, item)
+
+
+
+
     # Credit Memo flag to False until credit memo page is found
     cmemo = False
     # Sometimes the Customer # is blank so test for it.  If it is then Customer number is next string
@@ -242,31 +267,7 @@ def extract_info(p):
         info.credit_memo = 'CREDIT MEMO'
         cmemo = True
 
-    '''
-    # Get Sales rep number then convert to name
-    if check_num(p.list_items[0][-1]):
-        info.sales_rep = get_name(int(p.list_items[0][-1]))
-    else:
-        info.sales_rep = get_name(int(p.list_items[0][-2]))
-        info.credit_memo = 'CREDIT MEMO'
-        cmemo = True
-    
-    elif check_num(p.list_items[0][-2]):
-        # Check if the page is a Credit Memo
-        info.sales_rep = get_name(int(p.list_items[0][-2]))
-        info.credit_memo = 'CREDIT MEMO'
-        cmemo = True
-    elif check_num(p.list_items[0][-3]):
-        # Check if the page is a Credit Memo
-        info.sales_rep = get_name(int(p.list_items[0][-3]))
-        info.credit_memo = 'CREDIT MEMO'
-        cmemo = True
-    else:
-        # Check if the page is a Credit Memo
-        info.sales_rep = "NA"
-        info.credit_memo = 'CREDIT MEMO'
-        cmemo = True
-    '''
+
     # Remove line with Invoice number
     p.list_items.pop(0)
 
@@ -356,69 +357,6 @@ def extract_info(p):
     return True
 
 
-'''
-    # Get account info first then go line by line to get product info
-    for line in p.list_items:
-
-        item = Product()
-        # Check if line contains order info by seeing if first element is a sequence number
-        if check_num(line[0]):
-            if len(line) == 1 or line[0] == '' or line[1] == '':
-                continue
-            else:
-                item.sku = line[1]
-                line.pop(0)
-                line.pop(0)
-
-                for i in range(0, len(line)):
-                    if line[0] == "":
-                        line.pop(0)
-                        continue
-                    elif find_quantity(line[0]):
-                        # item.quantity = '-' + line[0].replace("-", "")
-                        item.quantity = line[0]
-
-                        # Move the negative sign to the left side if negative value found
-                        if item.quantity.find('-') >= 0:
-                            temp_line = '-' + item.quantity.replace("-", "")
-                            item.quantity = temp_line
-
-                        # Check if item is a credit memo.  If so, make the quantity a negative number
-                        if cmemo and item.quantity.find('-') == -1:
-                            item.quantity = '-' + item.quantity
-
-                        line.pop(0)
-                        break
-
-                    else:
-                        item.description = item.description + line[0]
-                        line.pop(0)
-
-                # Go through rest of list to find Unit Price.
-                for i in range(0, len(line)):
-                    if check_num(line[i]):
-                        # if next number found is a integer than set it to the quantity
-                        item.quantity = line[i]
-                    elif find_unit_price(line[i]):
-
-                        item.unit_price = line[i]
-                        # Move the negative sign to the left side if negative value found
-                        if item.unit_price.find('-') >= 0:
-                            temp_line = '-' + item.unit_price.replace("-", "")
-                            item.unit_price = temp_line
-                        break
-
-        else:
-            item.description2 = 'Test'
-
-
-        if item.sku != '':
-            line_item += 1
-            invoice_history.append([info.order_num, info.invoice_num, info.date, info.customer_num, info.sales_rep,
-                                    item.sku, item.description, item.description2, item.quantity, item.unit_price, info.credit_memo])
-
-
-'''
 
 # Break down the CSV file into list of pages
 for item in line_reader:
