@@ -1,6 +1,6 @@
 import xml.etree.ElementTree as ET
 
-titles = ['Adobe InDesign CC 2018', 'Adobe Lightroom Classic CC', 'Adobe Photoshop CC 2018', 'Adobe Illustrator CC 2018']
+titles = ['Adobe InDesign CC 2018', 'Acrobat DC', 'Adobe Photoshop CC 2018', 'Adobe Illustrator CC 2018']
 
 def reset_trial(title):
     path = "C:/Program Files/Adobe/"
@@ -9,6 +9,10 @@ def reset_trial(title):
     if title == 'Adobe Illustrator CC 2018':
         path = "C:/Program Files/Adobe/"
         end_path ="/Support Files/Contents/Windows/AMT/application.xml"
+
+    if title == 'Acrobat DC':
+        path = "C:/Program Files (x86)/Adobe/"
+        end_path = "/Acrobat/AMT/application.xml"
 
     tree = ET.parse(path + title + end_path)
     root = tree.getroot()

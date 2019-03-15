@@ -5,10 +5,11 @@ import numpy as np
 
 
 # Connect to SQL Server and set cursor
-conn = pyodbc.connect('DRIVER={SQL Server Native Client 11.0};SERVER=LALUCKYSERVER\SQLEXPRESS;DATABASE=pbsdataDEMO;UID=pbssqluser;PWD=Admin11')
+conn = pyodbc.connect('DRIVER={SQL Server Native Client 11.0};SERVER=DINHPC\SQLEXPRESS;DATABASE=pbsmaster;UID=pbssqluser;PWD=Admin11')
+#conn = pyodbc.connect('DRIVER={SQL Server Native Client 11.0};SERVER=MULTIMEDIAPC\SQLEXPRESS;DATABASE=pbsdataDEMO;UID=pbssqluser;PWD=Admin11')
 cur = conn.cursor()
 
-sqlstring = "SELECT cust_no, city, state, zipcode FROM dbo.CUSFIL00"
+sqlstring = "SELECT * FROM dbo.MLTCMP"
 
 df = pd.read_sql(sqlstring,conn)
 

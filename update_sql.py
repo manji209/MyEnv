@@ -9,7 +9,7 @@ df = pd.read_excel(file_name, sheet_name='Sheet1')
 # Remove all NaN and replace with blank space
 df = df.fillna('')
 
-conn = pyodbc.connect('DRIVER={SQL Server Native Client 11.0};SERVER=LALUCKYSERVER\SQLEXPRESS;DATABASE=pbsdataDEMO;UID=pbssqluser;PWD=Admin11')
+conn = pyodbc.connect('DRIVER={SQL Server Native Client 11.0};SERVER=MULTIMEDIAPC\SQLEXPRESS;DATABASE=pbsdataDEMO;UID=pbssqluser;PWD=Admin11')
 cur = conn.cursor()
 
 '''
