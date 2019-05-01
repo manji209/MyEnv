@@ -5,8 +5,8 @@ import numpy as np
 
 
 # Connect to SQL Server and set cursor
-conn = pyodbc.connect('DRIVER={SQL Server Native Client 11.0};SERVER=LALUCKYSERVER\SQLEXPRESS;DATABASE=pbsdata00;UID=pbssqluser;PWD=Admin11')
-#conn = pyodbc.connect('DRIVER={SQL Server Native Client 11.0};SERVER=DINHPC\SQLEXPRESS;DATABASE=pbsdata00;UID=pbssqluser;PWD=Admin11')
+#conn = pyodbc.connect('DRIVER={SQL Server Native Client 11.0};SERVER=LALUCKYSERVER\SQLEXPRESS;DATABASE=pbsdata00;UID=pbssqluser;PWD=Admin11')
+conn = pyodbc.connect('DRIVER={SQL Server Native Client 11.0};SERVER=DINHPC\SQLEXPRESS;DATABASE=pbsdata00;UID=pbssqluser;PWD=Admin11')
 
 cur = conn.cursor()
 
@@ -15,7 +15,7 @@ cur = conn.cursor()
 
 # Open the workbook and define the worksheet
 # book = xlrd.open_workbook("Data/import_order_entery_template.xlsx")
-book = xlrd.open_workbook("Import/LineItem_Import_Template_106048.xlsx")
+book = xlrd.open_workbook("Import/LineItem_Import_Template_104536_1.xlsx")
 sheet = book.sheet_by_name("Sheet1")
 #sheet.getCells().deleteRows(sheet.nrows+1, 1, True)
 total_qty = 0
@@ -78,20 +78,20 @@ for r in range(1, sheet.nrows):
     ord_no = sheet.cell(r,0).value
     seq_no = sheet.cell(r,1).value
     item_no = sheet.cell(r,2).value
-    item_desc_1 = sheet.cell(r,3).value
-    desc_1 = sheet.cell(r,4).value
-    desc_2 = sheet.cell(r,5).value
-    qty_ord = sheet.cell(r,6).value
-    ord_unit_of_meas = sheet.cell(r,7).value
-    qty_to_shp = sheet.cell(r,8).value
-    qty_bo = sheet.cell(r,9).value
-    qty_ret_inv = sheet.cell(r,10).value
-    scrap_svc_acctpc1 = sheet.cell(r, 11).value
-    scrap_svc_acctpc2 = sheet.cell(r, 12).value
-    scrap_svc_acctmain = sheet.cell(r, 13).value
-    scrap_svc_acctsub = sheet.cell(r, 14).value
-    bo_cod = sheet.cell(r, 15).value
-    unit_prc = sheet.cell(r, 16).value
+    qty_ord = sheet.cell(r, 3).value
+    unit_prc = sheet.cell(r, 4).value
+    item_desc_1 = sheet.cell(r,5).value
+    desc_1 = sheet.cell(r,6).value
+    desc_2 = sheet.cell(r,7).value
+    ord_unit_of_meas = sheet.cell(r,8).value
+    qty_to_shp = sheet.cell(r,9).value
+    qty_bo = sheet.cell(r,10).value
+    qty_ret_inv = sheet.cell(r,11).value
+    scrap_svc_acctpc1 = sheet.cell(r, 12).value
+    scrap_svc_acctpc2 = sheet.cell(r, 13).value
+    scrap_svc_acctmain = sheet.cell(r, 14).value
+    scrap_svc_acctsub = sheet.cell(r, 15).value
+    bo_cod = sheet.cell(r, 16).value
     conv_fac = sheet.cell(r, 17).value
     prc_unit_of_meas = sheet.cell(r, 18).value
     prc_unit_used = sheet.cell(r, 19).value
@@ -125,10 +125,14 @@ for r in range(1, sheet.nrows):
 
     # Assign values from each row
     values = (ord_no, seq_no, item_no, item_desc_1, desc_1, desc_2, qty_ord, ord_unit_of_meas, qty_to_shp, qty_bo,
-              qty_ret_inv, scrap_svc_acctpc1, scrap_svc_acctpc2, scrap_svc_acctmain, scrap_svc_acctsub, bo_cod, unit_prc,
-              conv_fac, prc_unit_of_meas, prc_unit_used, disc_amt, lin_item_acct_pc1, lin_item_acct_pc2, commis_pct, commis_amt,
-              unit_cost, txbl_cod_1, txbl_cod_2, txbl_cod_3, txbl_cod_4, txbl_cod_5, sel_cod, sell_unit, qty_conv_fac, track_flg,
-              track_qty, weight, negotiated_cost, estimated_cost, ex_txbl_amt, tax_amt, qty_scanned, po_lin_po_no, po_lin_lin_no)
+              qty_ret_inv, scrap_svc_acctpc1, scrap_svc_acctpc2, scrap_svc_acctmain, scrap_svc_acctsub, bo_cod,
+              unit_prc,
+              conv_fac, prc_unit_of_meas, prc_unit_used, disc_amt, lin_item_acct_pc1, lin_item_acct_pc2, commis_pct,
+              commis_amt,
+              unit_cost, txbl_cod_1, txbl_cod_2, txbl_cod_3, txbl_cod_4, txbl_cod_5, sel_cod, sell_unit, qty_conv_fac,
+              track_flg,
+              track_qty, weight, negotiated_cost, estimated_cost, ex_txbl_amt, tax_amt, qty_scanned, po_lin_po_no,
+              po_lin_lin_no)
 
     # Execute sql Query
     cur.execute(query, values)

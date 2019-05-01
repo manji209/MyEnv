@@ -260,5 +260,4 @@ for item in product_list:
 # Save to CSV file
 with open('output2.csv', 'w', newline='') as f:
     writer = csv.writer(f)
->>>>>>> 07970f69480e644ce394253bdd509d0230ad6e49
     writer.writerows(product_list)
