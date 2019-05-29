@@ -15,7 +15,7 @@ cur = conn.cursor()
 
 # Open the workbook and define the worksheet
 # book = xlrd.open_workbook("Data/import_order_entery_template.xlsx")
-book = xlrd.open_workbook("Import/LineItem_Import_Template_106965.xlsx")
+book = xlrd.open_workbook("Import/LineItem_Import_Template_107049.xlsx")
 sheet = book.sheet_by_name("Sheet1")
 #sheet.getCells().deleteRows(sheet.nrows+1, 1, True)
 total_qty = 0
