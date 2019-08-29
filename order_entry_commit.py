@@ -5,9 +5,9 @@ import numpy as np
 
 
 # Connect to SQL Server and set cursor
-conn = pyodbc.connect('DRIVER={SQL Server Native Client 11.0};SERVER=LALUCKYSERVER\SQLEXPRESS;DATABASE=pbsdata00;UID=pbssqluser;PWD=Admin11')
+#conn = pyodbc.connect('DRIVER={SQL Server Native Client 11.0};SERVER=LALUCKYSERVER\SQLEXPRESS;DATABASE=pbsdata00;UID=pbssqluser;PWD=Admin11')
 #conn = pyodbc.connect('DRIVER={SQL Server Native Client 11.0};SERVER=DINHPC\SQLEXPRESS;DATABASE=pbsdata00;UID=pbssqluser;PWD=Admin11')
-#conn = pyodbc.connect('DRIVER={ODBC Driver 17 for SQL Server};SERVER=DINHPC,52052;DATABASE=pbsdata00;UID=pbssqluser;PWD=Admin11')
+conn = pyodbc.connect('DRIVER={ODBC Driver 17 for SQL Server};SERVER=DINHPC,52052;DATABASE=pbsdata00;UID=pbssqluser;PWD=Admin11')
 
 cur = conn.cursor()
 
@@ -18,7 +18,9 @@ cur = conn.cursor()
 
 # Open the workbook and define the worksheet
 # book = xlrd.open_workbook("Data/import_order_entery_template.xlsx")
-book = xlrd.open_workbook("Import/LineItem_Import_Template_109792.xlsx")
+
+template_file = 'Import/LineItem_Import_Template_109351.xlsx'
+book = xlrd.open_workbook(template_file)
 sheet = book.sheet_by_name("Sheet1")
 #sheet.getCells().deleteRows(sheet.nrows+1, 1, True)
 total_qty = 0
@@ -26,6 +28,8 @@ total_sales = 0
 ord_no = 0
 seq_no = 0
 line_items = 0
+
+
 
 query = """INSERT INTO [dbo].[LINITM00] (
             [ord_no]
@@ -79,6 +83,8 @@ query = """INSERT INTO [dbo].[LINITM00] (
 cur.execute("SELECT count(*) FROM dbo.LINITM00")
 before_import = cur.fetchone()
 
+
+# Add each item to LINITM00 Table
 for r in range(1, sheet.nrows):
     ord_no = sheet.cell(r,0).value
     seq_no = sheet.cell(r,1).value
@@ -140,9 +146,43 @@ for r in range(1, sheet.nrows):
     line_items += 1
 
 
+# Update STAFIL and ITMFIL Tables commited field to reflect all items that have been ordered
+
+# Get current commited inventory number
+query_item_commit = "SELECT qty_commitd FROM dbo.ITMFIL00 WHERE item_no = ?"
+# Update ITMFIL Table commited value with the new qty ordered
+query_update_item_commit = """UPDATE [dbo].[ITMFIL00]
+                        SET [qty_commitd] =?
+                        WHERE [item_no] =?"""
+
+# Update STAFIL Table commited value with the new qty ordered
+query_update_status_commit = """UPDATE [dbo].[STAFIL00]
+                        SET [qty_commitd] =?
+                        WHERE [item_no] =?"""
+
+
+
+# Commit each item.  First pivot Items by Item # and add total quantity.  Convert Sheet to Dataframe then Pivot
+df_commit = pd.read_excel(template_file)
+# Pivot df_commit
+df_commit_piv = df_commit.pivot_table(values=['qty_ord'], index=['item_no'], aggfunc={'qty_ord':np.sum})
+
+for i, row in df_commit_piv.iterrows():
+    # Get current commited qty of selected item
+    cur.execute(query_item_commit, i)
+    cur_commited_qty = cur.fetchone()
+
+    total_commited_qty = cur_commited_qty[0]+ row['qty_ord']
+    commit_values = (total_commited_qty, i)
+    # Update commited values
+    cur.execute(query_update_item_commit, commit_values)
+    cur.execute(query_update_status_commit, commit_values)
+
+
 
 # Commit the transaction
-conn.commit()
+#conn.commit()
+
 
 query_order = """UPDATE [dbo].[ORDHDR00]
                 SET [tot_qty] =?
@@ -154,6 +194,8 @@ query_order = """UPDATE [dbo].[ORDHDR00]
 values2 = (total_qty, total_sales, total_sales, seq_no, line_items, ord_no)
 cur.execute(query_order, values2)
 conn.commit()
+
+
 
 # If you want to check if all rows are imported
 cur.execute("SELECT count(*) FROM dbo.LINITM00")

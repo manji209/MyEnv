@@ -12,7 +12,7 @@ def list_files(dir):
 # master_list = []
 pics = []
 
-d = ["D:/Consolidated_Catalog_Images"]
+d = ["D:/Catalog2019/Images_Excel_CSV/images"]
 '''
 
 d = ["Q:/Nguyen Graphic Designer Work/Nguyen Work 1 - 139 items",
@@ -48,6 +48,6 @@ pics = list(set(pics))
 pics.sort()
 
 df = pd.DataFrame(pics)
-df.to_csv('OUT/list_names_sorted_cons.csv', index=False)
+df.to_csv('../OUT/qr_items.csv', index=False)
 
 print(pics)

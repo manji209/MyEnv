@@ -9,13 +9,13 @@ def roundup(num):
 
 
 # Connect to SQL Server and set cursor
-#conn = pyodbc.connect('DRIVER={ODBC Driver 17 for SQL Server};SERVER=DINHPC,52052;DATABASE=pbsdata00;UID=pbssqluser;PWD=Admin11')
-conn = pyodbc.connect('DRIVER={ODBC Driver 17 for SQL Server};SERVER=LALUCKYSERVER,65181;DATABASE=pbsdata00;UID=pbssqluser;PWD=Admin11')
+conn = pyodbc.connect('DRIVER={ODBC Driver 17 for SQL Server};SERVER=DINHPC,52052;DATABASE=pbsdata00;UID=pbssqluser;PWD=Admin11')
+#conn = pyodbc.connect('DRIVER={ODBC Driver 17 for SQL Server};SERVER=LALUCKYSERVER,65181;DATABASE=pbsdata00;UID=pbssqluser;PWD=Admin11')
 
 
 cur = conn.cursor()
 
-order_no = 108360
+order_no = 107904
 sqlstring = """SELECT ord_no, seq_no, item_no, desc_1, qty_ord, unit_prc, unit_cost FROM dbo.LINITM00 WHERE ord_no=?"""
 
 df = pd.read_sql(sqlstring, conn, params={order_no})
@@ -39,7 +39,7 @@ df['MarkUp_21'] = ""
 df['Total'] = ""
 
 
-setprice_fname = "Data/Set_Price_06222019.xlsx"
+setprice_fname = "Data/Set_Price_06082019.xlsx"
 setprice_df = pd.read_excel(setprice_fname, sheet_name='Sheet1')
 
 found = False
@@ -73,48 +73,6 @@ for idx, row in df.iterrows():
             markup = row.unit_cost / .77
             if markup > row.unit_prc:
                 rounded = roundup(markup)
-                df.loc[idx, 'MarkUp_21'] = rounded
-                df.loc[idx, 'Total'] = rounded * row.qty_ord
-                found = False
-            elif row.unit_cost <= 8.5:
-                # Additional 6 percent markup if imported
-                rounded = roundup(row.unit_prc + ((row.unit_cost / .785) - row.unit_cost))
-                df.loc[idx, 'MarkUp_21'] = rounded
-                df.loc[idx, 'Total'] = rounded * row.qty_ord
-                found = False
-            elif row.unit_cost > 8.50 and row.unit_cost <= 11:
-                # Additional 6 percent markup if imported
-                rounded = roundup(row.unit_prc + ((row.unit_cost / .815) - row.unit_cost))
-                df.loc[idx, 'MarkUp_21'] = rounded
-                df.loc[idx, 'Total'] = rounded * row.qty_ord
-                found = False
-            elif row.unit_cost > 11 and row.unit_cost <= 16:
-                # Additional 6 percent markup if imported
-                rounded = roundup(row.unit_prc + ((row.unit_cost / .825) - row.unit_cost))
-                df.loc[idx, 'MarkUp_21'] = rounded
-                df.loc[idx, 'Total'] = rounded * row.qty_ord
-                found = False
-            elif row.unit_cost > 16 and row.unit_cost <= 20.5:
-                # Additional 6 percent markup if imported
-                rounded = roundup(row.unit_prc + ((row.unit_cost / .845) - row.unit_cost))
-                df.loc[idx, 'MarkUp_21'] = rounded
-                df.loc[idx, 'Total'] = rounded * row.qty_ord
-                found = False
-            elif row.unit_cost > 20.5 and row.unit_cost <= 26.5:
-                # Additional 6 percent markup if imported
-                rounded = roundup(row.unit_prc + ((row.unit_cost / .865) - row.unit_cost))
-                df.loc[idx, 'MarkUp_21'] = rounded
-                df.loc[idx, 'Total'] = rounded * row.qty_ord
-                found = False
-            elif row.unit_cost > 26.5 and row.unit_cost <= 47:
-                # Additional 6 percent markup if imported
-                rounded = roundup(row.unit_prc + ((row.unit_cost / .875) - row.unit_cost))
-                df.loc[idx, 'MarkUp_21'] = rounded
-                df.loc[idx, 'Total'] = rounded * row.qty_ord
-                found = False
-            elif row.unit_cost > 47 and row.unit_cost <= 60:
-                # Additional 6 percent markup if imported
-                rounded = roundup(row.unit_prc + ((row.unit_cost / .885) - row.unit_cost))
                 df.loc[idx, 'MarkUp_21'] = rounded
                 df.loc[idx, 'Total'] = rounded * row.qty_ord
                 found = False
