@@ -7,11 +7,10 @@ import sqlite3
 def connect_db():
     connect = pyodbc.connect(
         #'DRIVER={ODBC Driver 17 for SQL Server};SERVER=LALUCKYSERVER,65181;DATABASE=pbsdata00;UID=pbssqluser;PWD=Admin11')
-        #'DRIVER={SQL Server Native Client 11.0};SERVER=MANJI-RYZEN\SQLEXPRESS;DATABASE=pbsdata00;UID=pbssqluser;PWD=Admin11')
         'DRIVER={ODBC Driver 17 for SQL Server};SERVER=DINHPC,52052;DATABASE=pbsdata00;UID=pbssqluser;PWD=Admin11')
 
-
     return connect
+
 
 # Connect to SQL Server and set cursor
 conn = connect_db()

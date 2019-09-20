@@ -3,7 +3,7 @@ import xlrd
 import pandas as pd
 import numpy as np
 
-book = xlrd.open_workbook("Import/inventory_sales_07312019.xlsx")
+book = xlrd.open_workbook("Import/INVENTORY_SALES_083119.xlsx")
 sheet = book.sheet_by_name("Sheet1")
 
 # Connect to SQL Server and set cursor

@@ -5,17 +5,16 @@ import numpy as np
 
 
 # Connect to SQL Server and set cursor
-#conn = pyodbc.connect('DRIVER={ODBC Driver 17 for SQL Server};SERVER=LALUCKYSERVER\SQLEXPRESS;DATABASE=pbsmaster;UID=pbssqluser;PWD=Admin11')
+conn = pyodbc.connect('DRIVER={ODBC Driver 17 for SQL Server};SERVER=LALUCKYSERVER,65181;DATABASE=pbsdata00;UID=pbssqluser;PWD=Admin11')
 
-conn = pyodbc.connect('DRIVER={ODBC Driver 17 for SQL Server};SERVER=DINHPC,52052;DATABASE=pbsdata00;UID=pbssqluser;PWD=Admin11')
+#conn = pyodbc.connect('DRIVER={ODBC Driver 17 for SQL Server};SERVER=DINHPC,52052;DATABASE=pbsdata00;UID=pbssqluser;PWD=Admin11')
 
 cur = conn.cursor()
 
 sales_rep = 21
 year = 2019
-month = 7
+month = 8
 
-'''
 sqlstring = """SELECT item_no, desc_1, desc_2, cust_no, invc_no, qty, prc, ext_prc, invc_dat FROM dbo.IHSLIN00 
             WHERE sls_rep =? AND
             DATEPART(YEAR, invc_dat)=? AND DATEPART(MONTH, invc_dat)=?
@@ -26,7 +25,7 @@ sqlstring = """SELECT item_no, desc_1, desc_2, cust_no, invc_no, qty, prc, ext_p
             DATEPART(YEAR, invc_dat)=? AND DATEPART(MONTH, invc_dat)<=?
             ORDER BY item_no"""
 
-
+'''
 df = pd.read_sql(sqlstring,conn, params=(sales_rep, year, month))
 df['item_no'] = df['item_no'].str.strip()
 

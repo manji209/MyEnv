@@ -5,8 +5,8 @@ import numpy as np
 
 
 # Open excel sheet with order numbers and customer number
-book = xlrd.open_workbook("Data/Orders_List.xlsx")
-sheet = book.sheet_by_name("Sheet1")
+book = xlrd.open_workbook("Data/Orders_List_0904_0905.xlsx")
+sheet = book.sheet_by_name("Table 1")
 
 # Connect to SQL Server and set cursor
 conn = pyodbc.connect('DRIVER={ODBC Driver 17 for SQL Server};SERVER=LALUCKYSERVER,65181;DATABASE=pbsdata00;UID=pbssqluser;PWD=Admin11')

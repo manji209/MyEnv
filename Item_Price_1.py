@@ -31,7 +31,7 @@ df = pd.read_sql(sqlstring, conn)
 
 df.columns = df.columns.str.strip()
 
-setprice_fname = "Data/Set_Price_08152019_updated.xlsx"
+setprice_fname = "Data/Set_Price_09112019_updated.xlsx"
 setprice_df = pd.read_excel(setprice_fname, sheet_name='Sheet1')
 
 sqlupdate = "UPDATE dbo.ITMFIL00 SET item_prc_1=? WHERE item_no=?"

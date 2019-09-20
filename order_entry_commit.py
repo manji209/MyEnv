@@ -5,9 +5,9 @@ import numpy as np
 
 
 # Connect to SQL Server and set cursor
-#conn = pyodbc.connect('DRIVER={SQL Server Native Client 11.0};SERVER=LALUCKYSERVER\SQLEXPRESS;DATABASE=pbsdata00;UID=pbssqluser;PWD=Admin11')
+conn = pyodbc.connect('DRIVER={SQL Server Native Client 11.0};SERVER=LALUCKYSERVER\SQLEXPRESS;DATABASE=pbsdata00;UID=pbssqluser;PWD=Admin11')
 #conn = pyodbc.connect('DRIVER={SQL Server Native Client 11.0};SERVER=DINHPC\SQLEXPRESS;DATABASE=pbsdata00;UID=pbssqluser;PWD=Admin11')
-conn = pyodbc.connect('DRIVER={ODBC Driver 17 for SQL Server};SERVER=DINHPC,52052;DATABASE=pbsdata00;UID=pbssqluser;PWD=Admin11')
+#conn = pyodbc.connect('DRIVER={ODBC Driver 17 for SQL Server};SERVER=DINHPC,52052;DATABASE=pbsdata00;UID=pbssqluser;PWD=Admin11')
 
 cur = conn.cursor()
 
@@ -19,7 +19,7 @@ cur = conn.cursor()
 # Open the workbook and define the worksheet
 # book = xlrd.open_workbook("Data/import_order_entery_template.xlsx")
 
-template_file = 'Import/LineItem_Import_Template_109351.xlsx'
+template_file = 'Import/LineItem_Import_Template_111146.xlsx'
 book = xlrd.open_workbook(template_file)
 sheet = book.sheet_by_name("Sheet1")
 #sheet.getCells().deleteRows(sheet.nrows+1, 1, True)
