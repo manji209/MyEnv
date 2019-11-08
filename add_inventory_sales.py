@@ -3,13 +3,14 @@ import xlrd
 import pandas as pd
 import numpy as np
 
-book = xlrd.open_workbook("Import/INVENTORY_SALES_083119.xlsx")
+book = xlrd.open_workbook("Import/INVENTORY_SALES_103019.xlsx")
 sheet = book.sheet_by_name("Sheet1")
+
+#REMEMBER TO CHANGE THE trx_dat and trx_dat_a to current date!!!!!!!!!!!!!!!
 
 # Connect to SQL Server and set cursor
 #conn = pyodbc.connect('DRIVER={ODBC Driver 17 for SQL Server};SERVER=DINHPC,52052;DATABASE=pbsdata00;UID=pbssqluser;PWD=Admin11')
-conn = pyodbc.connect('DRIVER={SQL Server Native Client 11.0};SERVER=LALUCKYSERVER\SQLEXPRESS;DATABASE=pbsdata00;UID=pbssqluser;PWD=Admin11')
-#conn = pyodbc.connect('DRIVER={SQL Server Native Client 11.0};SERVER=DINHPC\SQLEXPRESS;DATABASE=pbsdata00;UID=pbssqluser;PWD=Admin11')
+conn = pyodbc.connect('DRIVER={ODBC Driver 17 for SQL Server};SERVER=LALUCKYSERVER,65181;DATABASE=pbsdata00;UID=pbssqluser;PWD=Admin11')
 
 cur = conn.cursor()
 
@@ -48,16 +49,16 @@ for r in range(1, sheet.nrows):
     item_no = sheet.cell(r,0).value
     whs = ''
     trx_typ = 80
-    trx_dat = "07-31-19"
+    trx_dat = "10-31-19"
     seq_no = sheet.cell(r,5).value
     batch_no = 0.0
     usr_id = ''
     lev_no = 0.0
     item_no_alt = item_no
-    trx_dat_a = "07-31-19"
+    trx_dat_a = "10-31-19"
     trx_typ_a = 80
     seq_no_alt = sheet.cell(r,5).value
-    doc_no = 190731
+    doc_no = 191031
     corr_flg = 'N'
     qty = sheet.cell(r,1).value
     actual_unit_cost = sheet.cell(r,4).value

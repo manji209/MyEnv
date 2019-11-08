@@ -12,7 +12,7 @@ def list_files(dir):
 # master_list = []
 pics = []
 
-d = ["D:/Pictures_Latest/Set_6/JPEG"]
+d = ["D:/Pictures_Latest/Pia/JPEG/watermark/opt/"]
 '''
 
 d = ["Q:/Nguyen Graphic Designer Work/Nguyen Work 1 - 139 items",
@@ -36,10 +36,12 @@ d = ["Q:/Nguyen Graphic Designer Work/Nguyen Work 1 - 139 items",
      "C:/Users/Dinh/Desktop/Online_images"]
 
 '''
-
+print("Depth of Directory", len(d))
 # Traverse each directory to get filenames
 for i in range(0, len(d)):
     pics = pics + list_files(d[i])
+
+
 
 # Remove duplicates
 pics = list(set(pics))
@@ -48,6 +50,6 @@ pics = list(set(pics))
 pics.sort()
 
 df = pd.DataFrame(pics)
-df.to_csv('../OUT/new_items_dry.csv', index=False)
+df.to_csv('../OUT/new_qr.csv', index=False)
 
 print(pics)
