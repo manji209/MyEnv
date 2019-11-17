@@ -1,5 +1,11 @@
 import os
 import pandas as pd
+import qrcode
+import csv
+
+# Import QR Code library
+
+
 
 def list_files(dir):
     r = []
@@ -12,7 +18,7 @@ def list_files(dir):
 # master_list = []
 pics = []
 
-d = ["D:/Pictures_Latest/Pia/JPEG/watermark/opt/"]
+d = ["D:/Pictures_Latest/Set_11/JPEG/"]
 '''
 
 d = ["Q:/Nguyen Graphic Designer Work/Nguyen Work 1 - 139 items",
@@ -41,8 +47,6 @@ print("Depth of Directory", len(d))
 for i in range(0, len(d)):
     pics = pics + list_files(d[i])
 
-
-
 # Remove duplicates
 pics = list(set(pics))
 
@@ -50,6 +54,33 @@ pics = list(set(pics))
 pics.sort()
 
 df = pd.DataFrame(pics)
-df.to_csv('../OUT/new_qr.csv', index=False)
+df.to_csv('./QR/Out/new_qr.csv', index=False)
 
 print(pics)
+
+
+#Start of QRcode creation
+
+with open('./QR/Out/new_qr.csv', 'r') as f:
+    reader = csv.reader(f)
+    item_list = list(reader)
+
+
+for item in item_list:
+    # Create qr code instance
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_H,
+        box_size=7,
+        border=2,
+    )
+    # Add data
+    qr.add_data(item[0])
+    qr.make(fit=True)
+    # Create an image from the QR Code instance
+    img = qr.make_image()
+    # Save it somewhere, change the extension as needed:
+    # img.save("image.png")
+    # img.save("image.bmp")
+    # img.save("image.jpeg")
+    img.save("./QR/New/qr_" + item[0]+".png")
