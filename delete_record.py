@@ -15,8 +15,11 @@ conn = pyodbc.connect('DRIVER={ODBC Driver 17 for SQL Server};SERVER=LALUCKYSERV
 cur = conn.cursor()
 
 
-sqlstring = "DELETE FROM dbo.ICPHXF00 WHERE item_no=?"
+#sqlstring = """DELETE FROM dbo.INVTRX00 WHERE trx_dat > '2019-12-01'"""
+sqlstring = """DELETE FROM dbo.INVTRX00 WHERE trx_typ = 80"""
 
+cur.execute(sqlstring)
+'''
 count = 0
 for index, row in df.iterrows():
     count += 1
@@ -27,5 +30,6 @@ for index, row in df.iterrows():
         print(e)
 
 print("Number of rows deleted: ", count)
+'''
 cur.close()
 conn.commit()

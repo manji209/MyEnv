@@ -8,7 +8,7 @@ import numpy as np
 conn = pyodbc.connect('DRIVER={SQL Server Native Client 11.0};SERVER=LALUCKYSERVER\SQLEXPRESS;DATABASE=pbsdataDEMO;UID=pbssqluser;PWD=Admin11')
 cur = conn.cursor()
 
-sqlstring = 'SELECT invc_no, invc_dat, cust_no, item_no, invc_or_cred, desc_1, desc_2, qty, prc, ext_prc, ord_no, sls_rep FROM dbo.IHSLIN00 WHERE year(invc_dat) >= 2018'
+sqlstring = """SELECT invc_dat, item_no, desc_1, desc_2, qty, prc, ext_prc, ord_no FROM dbo.IHSLIN00 WHERE cust_no='K001' AND invc_dat BETWEEN '2018-11-15' AND '2019-02-04'"""
 
 df = pd.read_sql(sqlstring,conn)
 

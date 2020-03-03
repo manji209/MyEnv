@@ -3,7 +3,7 @@ import datetime
 
 
 #ITEM Tracker API
-base_URL = "http://192.168.1.45:8000/itemtracker/run-helper/"
+base_URL = "http://192.168.1.50:8000/itemtracker/run-helper/"
 
 api_key = "5699xLucky90201"
 todayDate = datetime.datetime.now()

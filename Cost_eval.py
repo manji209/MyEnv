@@ -17,7 +17,7 @@ sqlstring = """SELECT item_no, desc_1, desc_2, qty_ord, unit_prc, ord_no, seq_no
 sqlstring_items = """SELECT item_no, replacement_cost
                     FROM dbo.ITMFIL00"""
 
-ord_no = 112743
+ord_no = 113819
 
 df = pd.read_sql(sqlstring, conn, params={ord_no})
 df['item_no'] = df['item_no'].str.strip()
@@ -34,7 +34,7 @@ for row in df.itertuples(index=True):
 df = df[['item_no', 'desc_1', 'desc_2', 'qty_ord', 'unit_prc', 'cost', 'ord_no', 'seq_no']]
 
 # Create a Pandas Excel writer using XlsxWriter as the engine.
-writer = pd.ExcelWriter('Out/Cost_eval_sub.xlsx', engine='xlsxwriter')
+writer = pd.ExcelWriter('Out/Cost_eval_113819.xlsx', engine='xlsxwriter')
 
 df.to_excel(writer, sheet_name='Sheet1', index=False)
 

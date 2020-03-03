@@ -3,7 +3,7 @@ import xlrd
 import pandas as pd
 import numpy as np
 
-book = xlrd.open_workbook("Import/INVENTORY_SALES_103019.xlsx")
+book = xlrd.open_workbook("Import/TTN_115220_inventory_adjustment.xlsx")
 sheet = book.sheet_by_name("Sheet1")
 
 #REMEMBER TO CHANGE THE trx_dat and trx_dat_a to current date!!!!!!!!!!!!!!!
@@ -48,20 +48,20 @@ before_import = cur.fetchone()
 for r in range(1, sheet.nrows):
     item_no = sheet.cell(r,0).value
     whs = ''
-    trx_typ = 80
-    trx_dat = "10-31-19"
+    trx_typ = 10
+    trx_dat = "01-06-20"
     seq_no = sheet.cell(r,5).value
     batch_no = 0.0
     usr_id = ''
     lev_no = 0.0
     item_no_alt = item_no
-    trx_dat_a = "10-31-19"
-    trx_typ_a = 80
+    trx_dat_a = "01-06-20"
+    trx_typ_a = 10
     seq_no_alt = sheet.cell(r,5).value
-    doc_no = 191031
+    doc_no = 780906
     corr_flg = 'N'
     qty = sheet.cell(r,1).value
-    actual_unit_cost = sheet.cell(r,4).value
+    actual_unit_cost = 0.0
     unit_prc = sheet.cell(r,2).value
     new_prc_1 = 0.0
     new_prc_2 = 0.0
