@@ -1,6 +1,7 @@
 import xml.etree.ElementTree as ET
 
-titles = ['Adobe InDesign CC 2018', 'Acrobat DC', 'Adobe Photoshop CC 2018', 'Adobe Illustrator CC 2018', 'Adobe Lightroom Classic CC', 'Adobe Lightroom CC']
+# titles = ['Adobe InDesign CC 2018', 'Acrobat DC', 'Adobe Photoshop CC 2018', 'Adobe Illustrator CC 2018', 'Adobe Lightroom Classic CC', 'Adobe Lightroom CC']
+titles = ['Adobe InDesign CC 2018', 'Adobe Photoshop CC 2018', 'Adobe Lightroom Classic CC']
 
 def reset_trial(title):
     path = "C:/Program Files/Adobe/"
