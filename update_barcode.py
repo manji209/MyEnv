@@ -5,15 +5,15 @@ import numpy as np
 
 # Update inventory from Excel sheet
 
-file_name = "Import/Items_past_year_test_backup08282019.xlsx"
-df = pd.read_excel(file_name, sheet_name='w-barcode')
+file_name = "Data/Barcodes/New_Barcodes-2020-01-16.xlsx"
+df = pd.read_excel(file_name, sheet_name='Sheet1', header=0, converters={'barcode2':str, 'barcode3':str})
 # Remove all NaN and replace with blank space
 df = df.fillna('')
 # df['barcode'] = df['barcode'].astype('str')
 
-#conn = pyodbc.connect('DRIVER={ODBC Driver 17 for SQL Server};SERVER=LALUCKYSERVER,65181;DATABASE=pbsdata00;UID=pbssqluser;PWD=Admin11')
+conn = pyodbc.connect('DRIVER={ODBC Driver 17 for SQL Server};SERVER=LALUCKYSERVER,65181;DATABASE=pbsdata00;UID=pbssqluser;PWD=Admin11')
 #conn = pyodbc.connect('DRIVER={ODBC Driver 17 for SQL Server};SERVER=DINHPC,52052;DATABASE=pbsdata00;UID=pbssqluser;PWD=Admin11')
-conn = pyodbc.connect('DRIVER={ODBC Driver 17 for SQL Server};SERVER=LALUCKYSERVER,65181;DATABASE=pbsdataDEMO;UID=pbssqluser;PWD=Admin11')
+#conn = pyodbc.connect('DRIVER={ODBC Driver 17 for SQL Server};SERVER=LALUCKYSERVER,65181;DATABASE=pbsdataDEMO;UID=pbssqluser;PWD=Admin11')
 
 cur = conn.cursor()
 
@@ -39,7 +39,7 @@ sqlinsert = """INSERT INTO [dbo].[CKEYWF00] (
 found = False
 
 for index, row in df.iterrows():
-    for index2 , row2 in df_barcodes.iterrows():
+    for index2, row2 in df_barcodes.iterrows():
         if row.item_no == row2.keyword_token:
             #df_barcodes.drop(df_barcodes.index[index2])
             found = True

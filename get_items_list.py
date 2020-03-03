@@ -13,7 +13,7 @@ conn = pyodbc.connect('DRIVER={ODBC Driver 17 for SQL Server};SERVER=LALUCKYSERV
 #conn = pyodbc.connect('DRIVER={ODBC Driver 17 for SQL Server};SERVER=DINHPC,52052;DATABASE=pbsdata00;UID=pbssqluser;PWD=Admin11')
 cur = conn.cursor()
 
-columns = ['ord_no','item_no', 'qty_ord', 'cust_no']
+columns = ['ord_no', 'item_no', 'qty_ord', 'cust_no']
 df_total = pd.DataFrame(columns=columns)
 
 def get_order(num, cust):

@@ -11,7 +11,7 @@ conn = pyodbc.connect('DRIVER={ODBC Driver 17 for SQL Server};SERVER=LALUCKYSERV
 
 cur = conn.cursor()
 
-sales_rep = 21
+sales_rep = 15
 year = 2020
 month = 1
 
@@ -30,8 +30,8 @@ df = pd.read_sql(sqlstring,conn, params=(sales_rep, year, month))
 df['item_no'] = df['item_no'].str.strip()
 
 # Create a Pandas Excel writer using XlsxWriter as the engine.
-fout_name = 'Out/TONY_ITEMS_REPORT_' + str(month) + '_' + str(year) + '.xlsx'
-#writer = pd.ExcelWriter('Out/ITEMS.xlsx', engine='xlsxwriter')
+fout_name = 'Out/LINH_ITEMS_REPORT_' + str(month) + '_' + str(year) + '.xlsx'
+
 writer = pd.ExcelWriter(fout_name, engine='xlsxwriter')
 
 df.to_excel(writer, sheet_name='Sheet1', index=False)
@@ -40,6 +40,4 @@ df.to_excel(writer, sheet_name='Sheet1', index=False)
 writer.save()
 
 
-
-print(df)
 

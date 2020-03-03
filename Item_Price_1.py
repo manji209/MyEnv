@@ -31,7 +31,7 @@ df = pd.read_sql(sqlstring, conn)
 
 df.columns = df.columns.str.strip()
 
-setprice_fname = "Data/Set_Price_110119.xlsx"
+setprice_fname = "Data/Set_Price_02272020.xlsx"
 setprice_df = pd.read_excel(setprice_fname, sheet_name='Sheet1')
 
 sqlupdate = "UPDATE dbo.ITMFIL00 SET item_prc_1=? WHERE item_no=?"
@@ -39,26 +39,26 @@ sqlupdate = "UPDATE dbo.ITMFIL00 SET item_prc_1=? WHERE item_no=?"
 for idx, row in df.iterrows():
     # 21 percent markups
     cost = greater(row.item_standard_cost, row.replacement_cost)
-    markup = cost / .77
+    markup = cost / .765
     if markup > row.item_prc_1:
         rounded = roundup(markup)
     elif cost <= 8.5:
-        rounded = roundup(row.item_prc_1 + ((cost / .785) - cost))
+        rounded = roundup(row.item_prc_1 + ((cost / .77) - cost))
     elif cost > 8.50 and cost <= 11:
-        rounded = roundup(row.item_prc_1 + ((cost / .815) - cost))
+        rounded = roundup(row.item_prc_1 + ((cost / .80) - cost))
     elif cost > 11 and cost <= 16:
-        rounded = roundup(row.item_prc_1 + ((cost / .825) - cost))
+        rounded = roundup(row.item_prc_1 + ((cost / .81) - cost))
     elif cost > 16 and cost <= 20.5:
-        rounded = roundup(row.item_prc_1 + ((cost / .845) - cost))
+        rounded = roundup(row.item_prc_1 + ((cost / .83) - cost))
     elif cost > 20.5 and cost <= 26.5:
-        rounded = roundup(row.item_prc_1 + ((cost / .865) - cost))
+        rounded = roundup(row.item_prc_1 + ((cost / .85) - cost))
     elif cost > 26.5 and cost <= 47:
-        rounded = roundup(row.item_prc_1 + ((cost / .875) - cost))
+        rounded = roundup(row.item_prc_1 + ((cost / .86) - cost))
     elif cost > 47 and cost <= 60:
-        rounded = roundup(row.item_prc_1 + ((cost / .885) - cost))
+        rounded = roundup(row.item_prc_1 + ((cost / .87) - cost))
     else:
         # Additional 6 percent markup if imported
-        rounded = roundup(row.item_prc_1 + ((cost / .90) - cost))
+        rounded = roundup(row.item_prc_1 + ((cost / .885) - cost))
 
     values = [rounded, row.item_no.strip()]
     try:
