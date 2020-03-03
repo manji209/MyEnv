@@ -39,5 +39,3 @@ def reset_trial(title):
 
 for i in range(0,len(titles)):
     reset_trial(titles[i])
-
-

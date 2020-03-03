@@ -7,14 +7,16 @@ from datetime import timedelta
 
 
 # Connect to SQL Server and set cursor
-#conn = pyodbc.connect('DRIVER={SQL Server Native Client 11.0};SERVER=DINHS-PC\SQLEXPRESS;DATABASE=pbsdataDEMO;UID=pbssqluser;PWD=Admin11')
-conn = pyodbc.connect('DRIVER={SQL Server Native Client 11.0};SERVER=DINHPC\SQLEXPRESS;DATABASE=pbsdata00;UID=pbssqluser;PWD=Admin11')
+#conn = pyodbc.connect('DRIVER={SQL Server Native Client 11.0};SERVER=DINHPC\SQLEXPRESS;DATABASE=pbsdata00;UID=pbssqluser;PWD=Admin11')
+conn = pyodbc.connect('DRIVER={SQL Server Native Client 11.0};SERVER=MANJI-RYZEN\SQLEXPRESS;DATABASE=pbsdata00;UID=pbssqluser;PWD=Admin11')
+
 cur = conn.cursor()
 
 sqlstring = "SELECT cust_no, doc_dat, due_dat, doc_typ, doc_no, appl_to_no, ref, amt_1, amt_2 FROM dbo.AROPEN00 WHERE cust_no=?"
-customer_no = ""
-temp_date = "03-07-2019"
-cur_date = datetime.today() - timedelta(days=8)
+customer_no = "K003"
+temp_date = "02-07-2019"
+#cur_date = datetime.today() - timedelta(days=46)
+cur_date = datetime.today()
 date_30 = cur_date + timedelta(days=30)
 date_60 = cur_date + timedelta(days=60)
 current = 0
@@ -31,6 +33,7 @@ df_amount = df.pivot_table(values=['amt_1'], index=['doc_typ'], aggfunc={'amt_1'
 
 df_unpaid = pd.DataFrame(columns=['cust_no', 'doc_dat', 'due_dat', 'doc_typ', 'doc_no', 'appl_to_no', 'ref', 'amt_1', 'amt_2', 'net_due'])
 
+print('Length df before: ', len(df))
 for index, row in df.iterrows():
     if row.doc_typ == 'P' or row.doc_typ == 'C' or row.doc_typ == 'R':
         for index2, row2 in df.iterrows():
@@ -92,11 +95,11 @@ for index, row in df.iterrows():
     if abs(cur_date.date() - row.doc_dat).days <= 30:
         current = current + row.amt_1 + row.amt_2
     elif abs(cur_date.date() - row.doc_dat).days >= 31 and abs(cur_date.date() - row.doc_dat).days <= 60:
-        over_30 = over_30 + row.amt_1 + row2.amt_2
+        over_30 = over_30 + row.amt_1 + row.amt_2
     elif abs(cur_date.date() - row.doc_dat).days >= 61 and abs(cur_date.date() - row.doc_dat).days <= 90:
-        over_60 = over_60 + row.amt_1 + row2.amt_2
+        over_60 = over_60 + row.amt_1 + row.amt_2
     else:
-        over_90 = over_90 + row.amt_1 + row2.amt_2
+        over_90 = over_90 + row.amt_1 + row.amt_2
 
 print('Current Date: ', cur_date)
 print('Current plus 30: ', date_30)
@@ -104,6 +107,7 @@ print('Current: ', current)
 print('Past Due Over 30: ', over_30)
 print('Past Due Over 60: ', over_60)
 print('Past Due Over 90: ', over_90)
+print('Length: ', len(df))
 
 
 # Create a Pandas Excel writer using XlsxWriter as the engine.
