@@ -86,8 +86,6 @@ for r in range(1, sheet.nrows):
     cur.execute(query, values)
     print(item_no)
 
-conn.commit()
-
 # If you want to check if all rows are imported
 cur.execute("SELECT count(*) FROM dbo.INVTRX00")
 result = cur.fetchone()
@@ -97,4 +95,6 @@ result = cur.fetchone()
 print((result[0] - before_import[0]))  # should be True
 
 # Close the database connection
+cur.close()
+conn.commit()
 conn.close()
