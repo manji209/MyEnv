@@ -3,7 +3,7 @@ import xlrd
 import pandas as pd
 import numpy as np
 
-book = xlrd.open_workbook("Import/Larry_Import_080924.xlsx")
+book = xlrd.open_workbook("Import/Larry_Import_011524.xlsx")
 sheet = book.sheet_by_name("Sheet1")
 
 #REMEMBER TO CHANGE THE trx_dat and trx_dat_a to current date!!!!!!!!!!!!!!!
@@ -15,7 +15,7 @@ conn = pyodbc.connect('DRIVER={ODBC Driver 17 for SQL Server};SERVER=LALUCKYSERV
 cur = conn.cursor()
 
 
-query = """UPDATE dbo.ITMFIL00 SET item_standard_cost=? WHERE item_no=?"""
+query = """UPDATE dbo.ITMFIL00 SET replacement_cost=? WHERE item_no=?"""
 
 # grab existing row count in the database for validation later
 cur.execute("SELECT count(*) FROM dbo.ITMFIL00")
@@ -24,9 +24,9 @@ before_import = cur.fetchone()
 
 for r in range(1, sheet.nrows):
     item_no = sheet.cell(r,0).value
-    item_standard_cost = round(sheet.cell(r,7).value,2)
+    replacement_cost = round(sheet.cell(r,2).value,2)
 
-    values = (item_standard_cost, item_no)
+    values = (replacement_cost, item_no)
 
     cur.execute(query, values)
     print(item_no)

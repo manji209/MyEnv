@@ -3,14 +3,14 @@ import xlrd
 import pandas as pd
 import numpy as np
 
-book = xlrd.open_workbook("Import/test_sample_RECEIVE_B.xlsx")
+book = xlrd.open_workbook("Import/240731_sales.xlsx")
 sheet = book.sheet_by_name("Sheet1")
 
 #REMEMBER TO CHANGE THE trx_dat and trx_dat_a to current date!!!!!!!!!!!!!!!
 
 # Connect to SQL Server and set cursor
-conn = pyodbc.connect('DRIVER={ODBC Driver 17 for SQL Server};SERVER=DINHPC,52052;DATABASE=pbsdata00;UID=pbssqluser;PWD=Admin11')
-#conn = pyodbc.connect('DRIVER={ODBC Driver 17 for SQL Server};SERVER=LALUCKYSERVER,65181;DATABASE=pbsdata00;UID=pbssqluser;PWD=Admin11')
+#conn = pyodbc.connect('DRIVER={ODBC Driver 17 for SQL Server};SERVER=DINHPC,52052;DATABASE=pbsdata00;UID=pbssqluser;PWD=Admin11')
+conn = pyodbc.connect('DRIVER={ODBC Driver 17 for SQL Server};SERVER=LALUCKYSERVER,65181;DATABASE=pbsdata00;UID=pbssqluser;PWD=Admin11')
 
 cur = conn.cursor()
 
@@ -66,7 +66,7 @@ for r in range(1, sheet.nrows):
     doc_no = sheet.cell(r,4).value
     corr_flg = 'N'
     qty = sheet.cell(r,1).value
-    actual_unit_cost = sheet.cell(r,2).value
+    actual_unit_cost = round(sheet.cell(r,2).value, 2)
     unit_prc = sheet.cell(r,3).value
     new_prc_1 = 0.0
     new_prc_2 = 0.0
@@ -86,8 +86,6 @@ for r in range(1, sheet.nrows):
     cur.execute(query, values)
     print(item_no)
 
-conn.commit()
-
 # If you want to check if all rows are imported
 cur.execute("SELECT count(*) FROM dbo.INVTRX00")
 result = cur.fetchone()
@@ -97,4 +95,6 @@ result = cur.fetchone()
 print((result[0] - before_import[0]))  # should be True
 
 # Close the database connection
+cur.close()
+conn.commit()
 conn.close()

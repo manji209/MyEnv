@@ -15,7 +15,7 @@ sqlstring = """SELECT item_no, item_desc_1, item_desc_2, lst_sls_dat
                 FROM dbo.ITMFIL00
                 WHERE DATEPART(YEAR, lst_sls_dat)=?"""
 
-year = 2019
+year = 2022
 
 df = pd.read_sql(sqlstring, conn, params={year})
 df['item_no'] = df['item_no'].str.strip()
