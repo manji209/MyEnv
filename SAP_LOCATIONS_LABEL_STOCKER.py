@@ -1,24 +1,26 @@
 import pyodbc
+import pandas as pd
+import numpy as np
 import xlrd
 import socket
 import time
-import pandas as pd
-import numpy as np
 
-book = xlrd.open_workbook("Data/SAP_ROW_A_LOCATIONS.xlsx")
-sheet = book.sheet_by_name("Stocker")
+
+book = xlrd.open_workbook("Data/MISC_LOCATIONS.xlsx")
+sheet = book.sheet_by_name("Misc")
 
 #Printer Info
 
-host = "192.168.1.248"
+host = "192.168.1.249"
 port = 9100
 
 for r in range(1, sheet.nrows):
     mysocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-    level = int(sheet.cell(r,4).value)
-    location = sheet.cell(r,5).value
-    qr = sheet.cell(r,6).value
+    #level = int(sheet.cell(r,4).value)
+    level = sheet.cell(r, 3).value
+    location = sheet.cell(r,4).value
+    qr = sheet.cell(r,5).value
 
     location_template = f"""^XA
     ~TA000
